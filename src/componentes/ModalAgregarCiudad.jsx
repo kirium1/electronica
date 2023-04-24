@@ -57,14 +57,13 @@ const ModalAgregarCiudad = () => {
   }
 
   const onFinish = async () => {
-      const resp = await fetch('http://localhost/electronica/controlador/c_departamento.php', {
-        method: 'POST',
-        body: JSON.stringify(ciudad),
-        headers: { 'Content-Type': 'application/json' }
+    const resp = await fetch('http://localhost/electronica/controlador/c_departamento.php', {
+      method: 'POST',
+      body: JSON.stringify(ciudad),
+      headers: { 'Content-Type': 'application/json' }
     });
     // console.log(resp);
     const respuesta = await resp.json();
-    console.log(respuesta);
     if(Number.isInteger(respuesta.respuesta)){
       setCiudad({...ciudad, id: Number.parseInt(respuesta.respuesta)});
       setIsModalOpen(false);
@@ -109,7 +108,6 @@ const ModalAgregarCiudad = () => {
               <Select.Option value="0">Inactivo</Select.Option>
             </Select>
           </Form.Item>
-
         </Form>
       </Modal>
     </>
