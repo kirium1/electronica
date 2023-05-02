@@ -1,20 +1,27 @@
 import { Link } from 'react-router-dom';
+import { blue, green } from '@ant-design/colors';
+import BreadcrumbProducto from './BreadcrumbProducto';
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     ShopOutlined,
     UserOutlined,
     VideoCameraOutlined,
+    PlusSquareOutlined,
   } from '@ant-design/icons';
-  import { Layout, Menu, theme, Table, Button, Modal, Form, Input , Select, InputNumber  } from 'antd';
+  import { Layout, Menu, theme, Table, Button, Modal, Form, Input , Select, InputNumber, message  } from 'antd';
   import React, { useState, useLayoutEffect } from 'react';
   const { Header, Sider, Content } = Layout;
   const URL_DEPARTAMENTO = "http://localhost/electronica/controlador/c_tienda.php";
   const URL_PRODUCTO = "http://localhost/electronica/controlador/c_producto.php";
+  const URL_TIENDA_ALIEXPRESS = "http://localhost/electronica/controlador/c_tienda_aliexpress.php";
+
 
   // const dataSource = [];
 
   export const MyDashboard = () => {
+    const [messageApi, contextHolder] = message.useMessage();
+    const [optionProductoTienda, setOptionProductoTienda] = useState([]);
     const columns = [
       {
         title: 'ID',
@@ -42,7 +49,8 @@ import {
         render: (producto,data) => (
           <>
             <Button type='primary' onClick={()=>seleccionarProducto(producto,data,"Editar")}>Editar</Button> {"  "}
-            <Button type='primary' danger>Eliminar</Button>
+            <Button type='primary' onClick={()=>seleccionarProducto(producto,data,"Eliminar")}danger>Eliminar</Button>{"  "}
+            <Button style={{background:green.primary, color:'white'}} onClick={()=>seleccionarProducto(producto,data,"Cotizacion")}>Cotizacion</Button>
           </>)
       }
     ];
@@ -63,6 +71,9 @@ import {
     const [estadoEditar,setEstadoEditar] = useState(1);
 
     const [productos,setProductos] =  useState([]);
+
+    const [precioProductoTiendaAliexpress,setPrecioProductoTiendaAliexpress] =  useState(1);
+    const [urlProductoTiendaAliexpress,setUrlProductoTiendaAliexpress] =  useState('');
   
   
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -132,8 +143,7 @@ import {
       setNombreEditar(value);
     }
 
-    const editPrecio = e =>{
-      const {name,value} = e.target;
+    function editPrecio(value) {
       setPrecioEditar(value);
     }
 
@@ -142,46 +152,42 @@ import {
       setDetalleEditar(value);
     }
 
-    // const editEst = e =>{
-    //   const {name,value} = e.target;
-    //   setNombreEditar(value);
-    // }
-
     const seleccionarProducto = (product,data,caso)=>{
-      // setProducto(data);
-      // console.log(data);
-      // // console.log(producto);
-      // setNombreEditar(data.nombre_producto);
-      // setProducto({...producto,precio: data.precio_estandar});
-      // setProducto({...producto,nombre: data.nombre_producto});
-      // setProducto({...producto,detalle: data.detalle_producto});
-      // setProducto({...producto,estado: data.estado_producto});
       setIdProducto(data.id_producto);
       setNombreEditar(data.nombre_producto);
       setDetalleEditar(data.detalle_producto);
       setEstadoEditar(data.estado_producto);
       setPrecioEditar(data.precio_estandar);
-      // console.log(producto);
       (caso==='Editar') && abrirCerrarModalEditar();
+      (caso==='Eliminar') && abrirCerrarModalEliminar();
+      (caso==='Cotizacion') && abrirCerrarModalProductoTienda();
     }
 
-    const onFinishEditar = async () => {
-      // console.log('click');
+    function cargar(){
+      message.success('Loading finished', 2.5);
+    }
+
+
+    const onFinishEditar = async () => {     
+      cargar();
       const resp = await fetch('http://localhost/electronica/controlador/c_producto.php', {
         method: 'POST',
         body: JSON.stringify({metodo:'editarProducto',idProducto,nombreEditar,detalleEditar,estadoEditar,precioEditar}),
         headers: { 'Content-Type': 'application/json' }
       });
       const respuesta = await resp.json();
-      console.log(respuesta);
-      // if(Number.isInteger(respuesta.respuesta)){
-      //   setProducto({...producto, id: Number.parseInt(respuesta.respuesta)});
-      //   getListaProductos();
-      //   setIsModalOpen(false);
-      // }
+      console.log(Number.isInteger(respuesta.respuesta));
+      if(Number.isInteger(respuesta.respuesta)){
+        getListaProductos();
+        setIsModalOpenEditar(false);
+      }
     };
 
     // const abrirCerrarModalEditar
+    function handleChangeNumberPrecioTiendaAliexpress(value) {
+      setPrecioProductoTiendaAliexpress(value);
+      // console.log(value);
+    }
 
     /////////////////////////////////////////
     function obtenerPrductosTienta(first){
@@ -192,6 +198,7 @@ import {
     useLayoutEffect(() => {
       getListaTiendasBolivia();
       getListaProductos();
+      getListaTiendasAliexpress();
     }, []);
     
     const getListaTiendasBolivia = async () => {
@@ -239,6 +246,106 @@ import {
       }    
     }
 
+    const getListaTiendasAliexpress = async () => {
+      const settings = {
+          method: 'POST',
+          body: JSON.stringify({metodo:'listarTiendasAliexpress'}),
+          headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+          }
+      };
+      try {
+          const fetchResponse = await fetch(URL_TIENDA_ALIEXPRESS, settings);
+          const datos = await fetchResponse.json();
+          // setOptionProductoTienda(datos);
+          let opciones = [];
+          datos.forEach(element => {
+            opciones.push({value:element.id_tienda_bolivia, label: element.nombre_tienda});
+          });
+          setOptionProductoTienda(opciones);
+          console.log(datos);
+          return datos;
+      } catch (e) {
+          return e;
+      }    
+    }
+
+    const [isModalOpenEliminar, setIsModalOpenEliminar] = useState(false);
+    // const showModalEliminar = () => {
+    //   setIsModalOpenEliminar(true);
+    // };
+    const handleOkEliminar = () => {
+      setIsModalOpenEliminar(false);
+    };
+    const handleCancelEliminar = () => {
+      setIsModalOpenEliminar(false);
+    };
+    const abrirCerrarModalEliminar = () =>{
+      setIsModalOpenEliminar(!isModalOpenEliminar);
+    }
+    const onFinishFailedEliminar = (errorInfo) => {
+      console.log('Failed:', errorInfo);
+    };
+
+    const onFinishEliminar = async () => {     
+      // console.log('aqui');
+      cargar();
+      const resp = await fetch('http://localhost/electronica/controlador/c_producto.php', {
+        method: 'POST',
+        body: JSON.stringify({metodo:'eliminarProducto',idProducto}),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const respuesta = await resp.json();
+      console.log(respuesta);
+      // console.log(Number.isInteger(respuesta.respuesta));
+      if(respuesta.respuesta === 1){
+        getListaProductos();
+        setIsModalOpenEliminar(false);
+      }
+    };
+
+    //=================================================
+    const [isModalOpenProductoTienda, setIsModalOpenProductoTienda] = useState(false);
+    // const showModalEliminar = () => {
+    //   setIsModalOpenEliminar(true);
+    // };
+    const handleOkProductoTienda = () => {
+      setIsModalOpenProductoTienda(false);
+    };
+    const handleCancelProductoTienda = () => {
+      setIsModalOpenProductoTienda(false);
+    };
+    const abrirCerrarModalProductoTienda = () =>{
+      setIsModalOpenProductoTienda(!isModalOpenProductoTienda);
+    }
+    const onFinishFailedProductoTienda = (errorInfo) => {
+      console.log('Failed:', errorInfo);
+    };
+
+    const handleUrlProductoTiendaAliexpress = e =>{
+      const {name,value} = e.target;
+      // setDetalleEditar(value);
+      setUrlProductoTiendaAliexpress(value);
+    }
+
+    const onFinishProductoTienda = async () => {     
+      cargar();
+      const resp = await fetch('http://localhost/electronica/controlador/c_producto.php', {
+        method: 'POST',
+        body: JSON.stringify({metodo:'eliminarProducto',idProducto}),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const respuesta = await resp.json();
+      console.log(respuesta);
+      // console.log(Number.isInteger(respuesta.respuesta));
+      if(respuesta.respuesta === 1){
+        getListaProductos();
+        setIsModalOpenEliminar(false);
+      }
+    };
+    
+
     const [collapsed, setCollapsed] = useState(false);
     const {
       token: { colorBgContainer },
@@ -252,7 +359,6 @@ import {
             mode="inline"
             defaultSelectedKeys={['1']}
             items={[
-              
               {
                 key: '1',
                 icon: <UserOutlined />,
@@ -289,7 +395,7 @@ import {
               className: 'trigger',
               onClick: () => setCollapsed(!collapsed),
             })}
-            <span>           </span> Cabezera
+            <span>           </span> Cabezera 
           </Header>
           <Content
             style={{
@@ -353,7 +459,7 @@ import {
               </Form>
             </Modal>
 
-            <Modal title="Editar Producto" open={isModalOpenEditar} onOk={handleOkEditar} onCancel={handleCancelEditar}
+            <Modal title={<><PlusSquareOutlined /> Editar producto </>} open={isModalOpenEditar} onOk={handleOkEditar} onCancel={handleCancelEditar}
               footer={[<Button onClick={abrirCerrarModalEditar} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myFormEditar" key="submit" htmlType="submit" >Agregar</Button> ]}>
               <hr />
               <br />
@@ -377,7 +483,7 @@ import {
                     },
                   ]}
                 >
-                  <InputNumber name="precio" onChange={editPrecio}  value={precioEditar} />
+                  <InputNumber name="precioEditar" onChange={editPrecio}  value={precioEditar} />
                 </Form.Item>
 
                 <Form.Item label="Detalle producto"
@@ -401,6 +507,53 @@ import {
                     <Select.Option value="1">Activo</Select.Option>
                     <Select.Option value="0">Inactivo</Select.Option>
                   </Select>
+                </Form.Item>
+              </Form>
+            </Modal>
+
+            <Modal title={<><PlusSquareOutlined /> Eliminar producto </>} open={isModalOpenEliminar} onOk={handleOkEliminar} onCancel={handleCancelEliminar}
+              footer={[<Button onClick={abrirCerrarModalEliminar} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myFormEliminar" key="submit" htmlType="submit" >Eliminar</Button> ]}>
+              <hr />
+              <br />
+              <Form id="myFormEliminar" name="basic" style={{maxWidth: 600,}} initialValues={{remember: true,}} onFinish={onFinishEliminar} onFinishFailed={onFinishFailedEliminar} autoComplete="off">
+                <span>Usted esta deacuerdo con eliminar el producto con nombre <strong>{nombreEditar}</strong> con precio de <strong>{precioEditar}</strong></span>
+              </Form>
+            </Modal>
+
+            <Modal title={<><PlusSquareOutlined /> Productos por tienda </>} open={isModalOpenProductoTienda} onOk={handleOkProductoTienda} onCancel={handleCancelProductoTienda}
+              footer={[<Button onClick={abrirCerrarModalProductoTienda} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myFormProductoTienda" key="submit" htmlType="submit" >Agregar</Button> ]}>
+              <hr />
+              <br />
+              <Form id="myFormProductoTienda" name="basic" labelCol={{span: 8,}} wrapperCol={{span: 16,}} style={{maxWidth: 600,}} initialValues={{remember: true,}} onFinish={onFinishProductoTienda} onFinishFailed={onFinishFailedProductoTienda} autoComplete="off">
+                <Form.Item label="Estado" rules={[
+                    {
+                      required: true,
+                      message: 'Seleccione una opcion!',
+                    },
+                  ]}>
+                  <Select options={optionProductoTienda}></Select>
+                </Form.Item>
+
+                <Form.Item label="Precio producto"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Escriba el precio del producto!',
+                    },
+                  ]}
+                >
+                  <InputNumber name="precioTiendaAliexpress" value={precioProductoTiendaAliexpress} onChange={handleChangeNumberPrecioTiendaAliexpress} />
+                </Form.Item>
+
+                <Form.Item label="URL del producto"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Escriba dirrecion del producto!',
+                    },
+                  ]}
+                >
+                  <Input name="urlProductoTiendaAliexpress" onChange={handleUrlProductoTiendaAliexpress} value={urlProductoTiendaAliexpress} />
                 </Form.Item>
               </Form>
             </Modal>

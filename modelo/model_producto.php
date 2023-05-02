@@ -35,11 +35,16 @@
             $sql = "UPDATE producto SET nombre_producto = :nombre, detalle_producto = :detalle, precio_estandar = :precio, estado_producto = :estado WHERE id_producto = :idProducto;";
             $sentenceSQL = $this->connexion_bd->prepare($sql);
             $res = $sentenceSQL->execute(array(':nombre'=>$nombre,":detalle"=>$detalle,':precio'=>$precio,':estado'=>$estado,':idProducto'=>$idProducto));
-            if($res === true){
-                $res = $idProducto;
-            }
             $sentenceSQL->closeCursor();
-            return array('respuesta'=>$res);
+            return array('respuesta'=>intval($res));
+        }
+
+        public function eliminarProducto($idProducto){
+            $sql = "DELETE FROM producto WHERE id_producto = :idProducto;";
+            $sentenceSQL = $this->connexion_bd->prepare($sql);
+            $res = $sentenceSQL->execute(array(':idProducto'=>$idProducto));
+            $sentenceSQL->closeCursor();
+            return array('respuesta'=>intval($res));
         }
 
         // public function agregarCiudad($nombre,$estado){

@@ -31,11 +31,16 @@
             $respuesta = $producto->editarProducto($idProducto,$nombre,$precio,$detalle,$estado);
             $res = json_encode($respuesta, JSON_PRETTY_PRINT);
             break;
+        case 'eliminarProducto':
+            $idProducto = $_POST['idProducto'];
+            $respuesta = $producto->eliminarProducto($idProducto);
+            $res = json_encode($respuesta, JSON_PRETTY_PRINT);
+            break;
         default:
             # code...
             break;
     }
     $producto->cerrarConexion();
-    // header("Content-Type: application/json");
+    header("Content-Type: application/json");
     // echo json_encode($res);
     echo $res;

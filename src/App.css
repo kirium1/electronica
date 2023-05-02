@@ -88,3 +88,19 @@
   margin: 16px;
   background: rgba(255, 255, 255, 0.3);
 }
+
+.bg-primary {
+  background-color: #4190F7;
+}
+
+.bg-success {
+  background-color: #70C040;
+}
+
+.bg-warning {
+  background-color: #EFAF41;
+}
+
+.bg-danger {
+  background-color: #E23C39;
+}
