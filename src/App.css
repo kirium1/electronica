@@ -104,3 +104,7 @@
 .bg-danger {
   background-color: #E23C39;
 }
+
+.your-table table {
+  width: auto;
+}

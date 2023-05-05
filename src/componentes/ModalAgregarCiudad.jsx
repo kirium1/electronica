@@ -2,7 +2,6 @@ import { Button, Modal, Form, Input , Select } from 'antd';
 import { useState } from 'react';
 
 
-
 const onFinishFailed = (errorInfo) => {
   console.log('Failed:', errorInfo);
 };
