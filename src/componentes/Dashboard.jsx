@@ -11,10 +11,11 @@ import {
     DeleteFilled,
     EditFilled,
     SaveOutlined,
-    QuestionCircleOutlined
+    QuestionCircleOutlined,
+    EditOutlined
   } from '@ant-design/icons';
   import { Layout, Menu, theme, Table, Button, Modal, Form, Input , Select, InputNumber, message, Col, Row, Space, Radio, Popconfirm } from 'antd';
-  import React, { useState, useLayoutEffect } from 'react';
+  import React, { useState, useLayoutEffect, useRef } from 'react';
   const { Header, Sider, Content } = Layout;
   const URL_DEPARTAMENTO = "http://localhost/electronica/controlador/c_tienda.php";
   const URL_PRODUCTO = "http://localhost/electronica/controlador/c_producto.php";
@@ -32,7 +33,7 @@ import {
     const [idTiendaBolivia,setIdTiendaBolivia] = useState(0);
     const [tiendasBolivia,setTiendasBolivia] = useState(0);
     const [urlCotizacionBolivia,setUrlCotizacionBolivia] = useState('');
-    const [precioUnitarioBolivia,setPrecioUnitarioBolivia] = useState(0.0);
+    const [precioUnitarioBolivia,setPrecioUnitarioBolivia] = useState(1);
     const [pagoExtraBolivia,setPagoExtraBolivia] = useState(0.0);
     const [stockBolivia,setStockBolivia] = useState(1);
     const [cantidadBolivia,setCantidadBolivia] = useState(1);
@@ -41,9 +42,21 @@ import {
     const [totalBolivia,setTotalBolivia] = useState(0.0);
     const [checkNick, setCheckNick] = useState(false);
 
+    const [textButton,setTextButton] = useState('Agregar Cotizacion');
+    const [styleButton,setStyleButton] = useState(true);
+    const [colorButton,setColorButton] = useState('#389e0d');
+
     const [cotizacionesBolivia,setCotizacionesBolivia] =  useState([]);
     const [optionProductoTienda, setOptionProductoTienda] = useState([]);
     const [isModalOpenCotizacionBolivia, setIsModalOpenCotizacionBolivia] = useState(false);
+
+    const refPrecioUnitarioBolivia = useRef();
+    const refPagoExtraBolivia = useRef();
+    const refCantidadBolivia = useRef();
+    const refCotizacionBolivia = useRef();
+    const refDescuentoBolivia = useRef();
+    const refTotalBolivia = useRef();
+
     const handleOkCotizacionBolivia = () => {
       setIsModalOpenCotizacionBolivia(false);
     };
@@ -64,15 +77,18 @@ import {
     }
     function changePrecioUnitarioBolivia(value) {
       setPrecioUnitarioBolivia(value);
+      calcularTotalCotizacionBolivia();
     }
     function changePagoExtraBolivia(value) {
       setPagoExtraBolivia(value);
+      // calcularTotalCotizacionBolivia();
     }
     function changeStockBolivia(value) {
       setStockBolivia(value);
     }
     function changeCantidadBolivia(value) {
       setCantidadBolivia(value);
+      // calcularTotalCotizacionBolivia();
     }
     function changeCotizacionTotalBolivia(value) {
       setCotizacionBolivia(value);
@@ -83,6 +99,28 @@ import {
 
     function changeTotalTiendaBolivia(value) {
       setTotalBolivia(value);
+    }
+
+    const cambiarStyloButtonCotizacionBolivia = () => {
+      if(styleButton){
+        setTextButton('Agregar Cotizacion');
+        setColorButton('#389e0d');
+      }else{
+        setTextButton('Editar Cotizacion');
+        setColorButton('#d4b106');
+      }
+      setStyleButton(!styleButton);
+    }
+
+    const calcularTotalCotizacionBolivia = () => {
+      let precioUnidad = refPrecioUnitarioBolivia.current.value;
+      let pagoExtra = refPagoExtraBolivia.current.value;
+      let cantidad = refCantidadBolivia.current.value;
+      let cotizacion = (precioUnidad * cantidad) - pagoExtra;
+      setCotizacionBolivia(cotizacion);
+      let descuento = refDescuentoBolivia.current.value;
+      let totalCotizacion = cotizacion - descuento;
+      setTotalBolivia(totalCotizacion);
     }
 
     const onFinishCotizacionTiendaBolivia = async () => {     
@@ -97,14 +135,12 @@ import {
       });
       const respuesta = await resp.json();
       // console.log(respuesta);
-      // if(respuesta.respuesta === 1){
-      //   getListaProductos();
-      //   setIsModalOpenEliminar(false);
-      // }
+      if(Number.isInteger(respuesta)){
+        solicitarCotizacionesTiendaBolivia();
+      }
     };
 
     const confirmEliminarCotizacionBolivia = async (e) => {
-      console.log(e);
       // message.success('Click on Yes');
       const resp = await fetch(URL_COTIZACION_TIENDA_BOLIVIA, {
         method: 'POST',
@@ -113,10 +149,12 @@ import {
       });
       const respuesta = await resp.json();
       if(respuesta.respuesta === 1){
+        solicitarCotizacionesTiendaBolivia();
         // getListaProductos();
-        let myData = cotizacionesBolivia.filter(item => item.id_cotizacion_tienda_bolivia !== idCotizacionBolivia);
-        console.log(myData);
-        setCotizacionBolivia(myData);
+        // console.log(cotizacionBolivia);
+        // let myData = cotizacionesBolivia.filter(item => item.id_cotizacion_tienda_bolivia !== idCotizacionBolivia);
+        // console.log(myData);
+        // setCotizacionBolivia(myData);
       }
       // console.log(respuesta)
     };
@@ -135,7 +173,8 @@ import {
       //   eliminarCotizacionTiendaBolivia();
       // }
       if(caso==='Editar'){
-        solicitarCotizacionesTiendaBolivia();
+        cambiarStyloButtonCotizacionBolivia();
+        // solicitarCotizacionesTiendaBolivia();
       }
     }
 
@@ -210,7 +249,7 @@ import {
         title: 'Direccion URL',
         dataIndex: 'url_producto_tienda_bolivia',
         key: 'url_producto_tienda_bolivia',
-        render: (text) => <a href={text}>Enlace</a>,
+        render: (text) => <a href={text} target="_blank" rel="noreferrer" >Enlace</a>,
       },
       {
         title: 'Precio U.',
@@ -296,7 +335,7 @@ import {
         title: 'Direccion URL',
         dataIndex: 'url_producto_tienda_aliexpress',
         key: 'url_producto_tienda_aliexpress',
-        render: (text) => <a href={text}>Enlace</a>,
+        render: (text) => <a href={text} target="_blank" rel="noreferrer">Enlace</a>,
       },
       {
         title: 'Precio U.',
@@ -679,6 +718,7 @@ import {
         setIsModalOpenEliminar(false);
       }
     };
+    
 
     const [collapsed, setCollapsed] = useState(false);
     const {
@@ -793,8 +833,8 @@ import {
               </Form>
             </Modal>
 
-            <Modal title={<><PlusSquareOutlined /> Editar producto </>} open={isModalOpenEditar} onOk={handleOkEditar} onCancel={handleCancelEditar}
-              footer={[<Button onClick={abrirCerrarModalEditar} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myFormEditar" key="submit" htmlType="submit" >Agregar</Button> ]}>
+            <Modal title={<><EditOutlined style={{backgroundColor:'yellow',fontSize: '18px'}} /> Editar producto </>} open={isModalOpenEditar} onOk={handleOkEditar} onCancel={handleCancelEditar}
+              footer={[<Button onClick={abrirCerrarModalEditar} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myFormEditar" key="submit" htmlType="submit" > Actualizar</Button> ]}>
               <hr />
               <br />
               <Form id="myFormEditar" name="basic" labelCol={{span: 8,}} wrapperCol={{span: 16,}} style={{maxWidth: 600,}} initialValues={{remember: true,}} onFinish={onFinishEditar} onFinishFailed={onFinishFailedEditar} autoComplete="off">
@@ -933,12 +973,12 @@ import {
                   <Row gutter={16}>
                     <Col span={8}>
                       <Form.Item label="Precio U." rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="precioUnitario" onChange={changePrecioUnitarioBolivia} value={precioUnitarioBolivia} style={{ width: '100%' }}/>
+                        <InputNumber name="precioUnitario" ref={refPrecioUnitarioBolivia} onChange={changePrecioUnitarioBolivia} value={precioUnitarioBolivia} style={{ width: '100%' }}/>
                       </Form.Item>
                     </Col>
                     <Col span={8}>
                       <Form.Item label="Pago extra" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="pagoExtra" onChange={changePagoExtraBolivia} value={pagoExtraBolivia} style={{ width: '100%' }}/>
+                        <InputNumber name="pagoExtra" ref={refPagoExtraBolivia} onChange={changePagoExtraBolivia} value={pagoExtraBolivia} style={{ width: '100%' }}/>
                       </Form.Item>
                     </Col>
                     <Col span={8}>
@@ -950,22 +990,22 @@ import {
                   <Row gutter={16}>
                     <Col span={6}>
                       <Form.Item label="Cantidad" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <Input name="cantidad" onChange={changeCantidadBolivia} value={cantidadBolivia} style={{ width: '100%' }} />
+                        <InputNumber name="cantidad" ref={refCantidadBolivia} onChange={changeCantidadBolivia} value={cantidadBolivia} style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
                       <Form.Item label="Cotizacion" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="cotizacion" onChange={changeCotizacionTotalBolivia} value={cotizacionBolivia} style={{ width: '100%' }} />
+                        <InputNumber name="cotizacion"  ref={refCotizacionBolivia} onChange={changeCotizacionTotalBolivia} value={cotizacionBolivia} style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
                       <Form.Item label="Descuento" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="descuento" onChange={changeDescuentoTiendaBolivia} value={descuentoBolivia} style={{ width: '100%' }} />
+                        <InputNumber name="descuento" ref={refDescuentoBolivia} onChange={changeDescuentoTiendaBolivia} value={descuentoBolivia} style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
                       <Form.Item label="Total" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="total" onChange={changeTotalTiendaBolivia}  value={totalBolivia} style={{ width: '100%' }} />
+                        <InputNumber name="total" ref={refTotalBolivia} onChange={changeTotalTiendaBolivia}  value={totalBolivia} style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -979,7 +1019,7 @@ import {
                       </Form.Item>
                     </Col>
                     <Col span={12}>
-                      <Button type="primary" block style={{background:green.primary, color:'white', height:'60%'}} htmlType="submit" > <SaveOutlined /> Agregar Cotizacion</Button>
+                      <Button type="primary" block style={{background:colorButton, color:'white', height:'60%'}} htmlType="submit" > <SaveOutlined /> {textButton}</Button>
                     </Col>
                   </Row>
                   <hr />
