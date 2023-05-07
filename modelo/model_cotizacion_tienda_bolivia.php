@@ -12,7 +12,7 @@
         }
 
         public function solicitarCotizacionesTiendaBolivia($idProducto){
-            $sql = "SELECT id_cotizacion_tienda_bolivia, id_producto, tienda_bolivia.id_tienda_bolivia, tienda_bolivia.nombre_tienda, precio_unidad,
+            $sql = "SELECT id_cotizacion_tienda_bolivia, id_producto, tienda_bolivia.id_tienda_bolivia, tienda_bolivia.nombre_tienda, precio_unidad, existe_producto_tienda,
             url_producto_tienda_bolivia, fecha_cotizacion, pago_extra, stock_actual, cantidad_producto, precio_cotizacion, descuento_cotizacion, total_cotizacion
             FROM cotizacion_tienda_bolivia INNER JOIN tienda_bolivia USING (id_tienda_bolivia) WHERE id_producto = :idProducto;";
             $sentenceSQL = $this->connexion_bd->prepare($sql);
@@ -30,7 +30,7 @@
             $sentenceSQL = $this->connexion_bd->prepare($sql);
             $res = $sentenceSQL->execute(array(':idProducto'=>$idProducto,':idTiendaBolivia'=>$idTiendaBolivia,':precioUnitarioBolivia'=>$precioUnitarioBolivia,':urlCotizacionBolivia'=>$urlCotizacionBolivia,
             ':fecha'=>$fecha,':pagoExtraBolivia'=>$pagoExtraBolivia,':stockBolivia'=>$stockBolivia,':cantidadBolivia'=>$cantidadBolivia,
-            ':cotizacionBolivia'=>$cantidadBolivia,':descuentoBolivia'=>$descuentoBolivia,':totalBolivia'=>$totalBolivia));
+            ':cotizacionBolivia'=>$cotizacionBolivia,':descuentoBolivia'=>$descuentoBolivia,':totalBolivia'=>$totalBolivia));
             if($res === true){
                 $res = intval($this->connexion_bd->lastInsertId());
             }

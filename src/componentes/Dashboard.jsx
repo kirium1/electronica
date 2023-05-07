@@ -14,7 +14,7 @@ import {
     QuestionCircleOutlined,
     EditOutlined
   } from '@ant-design/icons';
-  import { Layout, Menu, theme, Table, Button, Modal, Form, Input , Select, InputNumber, message, Col, Row, Space, Radio, Popconfirm } from 'antd';
+  import { Layout, Menu, theme, Table, Button, Modal, Form, Input , Select, InputNumber, message, Col, Row, Badge, Radio, Popconfirm } from 'antd';
   import React, { useState, useLayoutEffect, useRef } from 'react';
   const { Header, Sider, Content } = Layout;
   const URL_DEPARTAMENTO = "http://localhost/electronica/controlador/c_tienda.php";
@@ -40,7 +40,11 @@ import {
     const [cotizacionBolivia,setCotizacionBolivia] = useState(0.0);
     const [descuentoBolivia,setDescuentoBolivia] = useState(0.0);
     const [totalBolivia,setTotalBolivia] = useState(0.0);
-    const [checkNick, setCheckNick] = useState(false);
+
+    const [tiendaBolivaDefecto,setTiendaBolivaDefecto] = useState(null);
+
+    const [existeProducto, setExisteProducto] = useState(1);
+    const [disabledCotizacionBolivia, setDisabledCotizacionBolivia] = useState(false);
 
     const [textButton,setTextButton] = useState('Agregar Cotizacion');
     const [styleButton,setStyleButton] = useState(true);
@@ -56,6 +60,16 @@ import {
     const refCotizacionBolivia = useRef();
     const refDescuentoBolivia = useRef();
     const refTotalBolivia = useRef();
+
+    const changeExistenciaProducto = (e) =>{
+      setExisteProducto(e.target.value);
+      console.log(e.target.value);
+      if(e.target.value == 1){
+        setDisabledCotizacionBolivia(false);
+      }else{
+        setDisabledCotizacionBolivia(true);
+      }
+    }
 
     const handleOkCotizacionBolivia = () => {
       setIsModalOpenCotizacionBolivia(false);
@@ -102,7 +116,7 @@ import {
     }
 
     const cambiarStyloButtonCotizacionBolivia = () => {
-      if(styleButton){
+      if(!styleButton){
         setTextButton('Agregar Cotizacion');
         setColorButton('#389e0d');
       }else{
@@ -124,7 +138,7 @@ import {
     }
 
     const onFinishCotizacionTiendaBolivia = async () => {     
-      // cargar();
+      cargar();
       const resp = await fetch(URL_COTIZACION_TIENDA_BOLIVIA, {
         method: 'POST',
         body: JSON.stringify({metodo:'agregarCotizacionTiendaBolivia',idTiendaBolivia:idTiendaBolivia,idProducto:idProducto,urlCotizacionBolivia:urlCotizacionBolivia,
@@ -136,7 +150,15 @@ import {
       const respuesta = await resp.json();
       // console.log(respuesta);
       if(Number.isInteger(respuesta)){
-        solicitarCotizacionesTiendaBolivia();
+        solicitarCotizacionesTiendaBolivia(idProducto);
+        setUrlCotizacionBolivia('');
+        setPrecioUnitarioBolivia(0.0);
+        setPagoExtraBolivia(0.0);
+        setStockBolivia(0);
+        setCantidadBolivia(1);
+        setCotizacionBolivia(0.0);
+        setDescuentoBolivia(0.0);
+        setTotalBolivia(0.0);
       }
     };
 
@@ -149,7 +171,7 @@ import {
       });
       const respuesta = await resp.json();
       if(respuesta.respuesta === 1){
-        solicitarCotizacionesTiendaBolivia();
+        solicitarCotizacionesTiendaBolivia(idProducto);
         // getListaProductos();
         // console.log(cotizacionBolivia);
         // let myData = cotizacionesBolivia.filter(item => item.id_cotizacion_tienda_bolivia !== idCotizacionBolivia);
@@ -158,6 +180,7 @@ import {
       }
       // console.log(respuesta)
     };
+
     const cancelEliminarCotizacionBolivia = (e) => {
       console.log(e);
       message.error('Click on No');
@@ -173,8 +196,25 @@ import {
       //   eliminarCotizacionTiendaBolivia();
       // }
       if(caso==='Editar'){
+        // setNombreEditar(data.nombre_producto);
+        // console.log(data.id_tienda_bolivia);
+        // let nuevoArreglo = [];
+        // nuevoArreglo = tiendasBolivia.forEach(element => {
+        //   if(element.id_tienda_bolivia == data.id_tienda_bolivia){
+        //     nuevoArreglo.push();
+        //   }
+        // });
+        // console.log(data.id_tienda_bolivia);
+        setTiendaBolivaDefecto(data.id_tienda_bolivia);
+        setUrlCotizacionBolivia(data.url_producto_tienda_bolivia);
+        setPrecioUnitarioBolivia(parseFloat(data.precio_unidad));
+        setPagoExtraBolivia(parseFloat(data.pago_extra));
+        setStockBolivia(parseInt(data.stock_actual));
+        setCotizacionBolivia(parseFloat(data.precio_cotizacion));
+        setDescuentoBolivia(parseFloat(data.descuento_cotizacion));
+        setTotalBolivia(parseFloat(data.total_cotizacion));
+
         cambiarStyloButtonCotizacionBolivia();
-        // solicitarCotizacionesTiendaBolivia();
       }
     }
 
@@ -234,6 +274,12 @@ import {
         title: 'ID',
         dataIndex: 'id_cotizacion_tienda_bolivia',
         key: 'id_cotizacion_tienda_bolivia',
+      },
+      {
+        title: 'Tiene',
+        dataIndex: 'existe_producto_tienda',
+        key: 'existe_producto_tienda',
+        render: (text) => text == 1 ? <Badge status='success' text='Si' /> : <Badge status='warning' text={text} /> ,
       },
       {
         title: 'Nombre',
@@ -305,10 +351,8 @@ import {
                       }}
                     />
                   }>
-              {/* <Button type="link">Delete</Button> */}
               <Button type='primary' onClick={()=>seleccionarCotizacion(producto,data,"Eliminar")}danger><DeleteFilled /></Button>
             </Popconfirm>
-            {/* <Button type='primary' onClick={()=>seleccionarCotizacion(producto,data,"Eliminar")}danger><DeleteFilled /></Button> */}
           </>)
       }
     ];
@@ -494,14 +538,14 @@ import {
       }
       (caso==='CotizacionBolivia') && abrirCerrarModalCotizacionBolivia();
       if(caso==='CotizacionBolivia'){
-        solicitarCotizacionesTiendaBolivia();
+        solicitarCotizacionesTiendaBolivia(data.id_producto);
       }
     }
 
-    const solicitarCotizacionesTiendaBolivia = async () => {
+    const solicitarCotizacionesTiendaBolivia = async (id) => {
       const settings = {
           method: 'POST',
-          body: JSON.stringify({metodo:'solicitarCotizacionesTiendaBolivia', idProducto:idProducto}),
+          body: JSON.stringify({metodo:'solicitarCotizacionesTiendaBolivia', idProducto:id}),
           headers: {
               Accept: 'application/json',
               'Content-Type': 'application/json',
@@ -559,12 +603,6 @@ import {
     // const abrirCerrarModalEditar
     function handleChangeNumberPrecioTiendaAliexpress(value) {
       setPrecioProductoTiendaAliexpress(value);
-      // console.log(value);
-    }
-
-    /////////////////////////////////////////
-    function obtenerPrductosTienta(first){
-      console.log(first);
     }
 
     const [tNavTienda,setNavTienda] = useState([]);
@@ -595,7 +633,6 @@ import {
           // });
           // setNavTienda(tiendas);
           let opciones = [];
-          console.log(datos);
           datos.forEach(element => {
             opciones.push({value:element.id_tienda_bolivia, label: element.nombre_tienda});
           });
@@ -956,6 +993,7 @@ import {
                   <Row gutter={16}>
                     <Col span={7}>
                       <Form.Item label="Tienda Bolivia" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
+                        {/* value={tiendaBolivaDefecto} */}
                         <Select options={tiendasBolivia} onChange={handleChangeTiendaBolivia}></Select>
                       </Form.Item>
                     </Col>
@@ -966,55 +1004,55 @@ import {
                     </Col>
                     <Col span={10}>
                       <Form.Item label="Url" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <Input name="url_cotizacion_bolivia" onChange={changeURLCotizacionBolivia} value={urlCotizacionBolivia} />
+                        <Input name="url_cotizacion_bolivia" disabled={disabledCotizacionBolivia}  onChange={changeURLCotizacionBolivia} value={urlCotizacionBolivia} />
                       </Form.Item>
                     </Col>
                   </Row>
                   <Row gutter={16}>
                     <Col span={8}>
                       <Form.Item label="Precio U." rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="precioUnitario" ref={refPrecioUnitarioBolivia} onChange={changePrecioUnitarioBolivia} value={precioUnitarioBolivia} style={{ width: '100%' }}/>
+                        <InputNumber name="precioUnitario" disabled={disabledCotizacionBolivia} ref={refPrecioUnitarioBolivia} onChange={changePrecioUnitarioBolivia} value={precioUnitarioBolivia} style={{ width: '100%' }}/>
                       </Form.Item>
                     </Col>
                     <Col span={8}>
                       <Form.Item label="Pago extra" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="pagoExtra" ref={refPagoExtraBolivia} onChange={changePagoExtraBolivia} value={pagoExtraBolivia} style={{ width: '100%' }}/>
+                        <InputNumber name="pagoExtra" disabled={disabledCotizacionBolivia} ref={refPagoExtraBolivia} onChange={changePagoExtraBolivia} value={pagoExtraBolivia} style={{ width: '100%' }}/>
                       </Form.Item>
                     </Col>
                     <Col span={8}>
                       <Form.Item label="Stock" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="stock" onChange={changeStockBolivia} value={stockBolivia} style={{ width: '100%' }} />
+                        <InputNumber name="stock" disabled={disabledCotizacionBolivia} onChange={changeStockBolivia} value={stockBolivia} style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                   </Row>
                   <Row gutter={16}>
                     <Col span={6}>
                       <Form.Item label="Cantidad" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="cantidad" ref={refCantidadBolivia} onChange={changeCantidadBolivia} value={cantidadBolivia} style={{ width: '100%' }} />
+                        <InputNumber name="cantidad" disabled={disabledCotizacionBolivia} ref={refCantidadBolivia} onChange={changeCantidadBolivia} value={cantidadBolivia} style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
                       <Form.Item label="Cotizacion" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="cotizacion"  ref={refCotizacionBolivia} onChange={changeCotizacionTotalBolivia} value={cotizacionBolivia} style={{ width: '100%' }} />
+                        <InputNumber name="cotizacion" disabled={disabledCotizacionBolivia} ref={refCotizacionBolivia} onChange={changeCotizacionTotalBolivia} value={cotizacionBolivia} style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
                       <Form.Item label="Descuento" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="descuento" ref={refDescuentoBolivia} onChange={changeDescuentoTiendaBolivia} value={descuentoBolivia} style={{ width: '100%' }} />
+                        <InputNumber name="descuento" disabled={disabledCotizacionBolivia} ref={refDescuentoBolivia} onChange={changeDescuentoTiendaBolivia} value={descuentoBolivia} style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
                       <Form.Item label="Total" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        <InputNumber name="total" ref={refTotalBolivia} onChange={changeTotalTiendaBolivia}  value={totalBolivia} style={{ width: '100%' }} />
+                        <InputNumber name="total" disabled={disabledCotizacionBolivia} ref={refTotalBolivia} onChange={changeTotalTiendaBolivia}  value={totalBolivia} style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                   </Row>
                   <Row gutter={12}>
                     <Col span={12}>
                       <Form.Item name="radio-group" label="Existe producto?">
-                        <Radio.Group>
-                          <Radio value="si">Si</Radio>
-                          <Radio value="no">No</Radio>
+                        <Radio.Group value={existeProducto} onChange={changeExistenciaProducto}>
+                          <Radio value={1}>Si</Radio>
+                          <Radio value={0}>No</Radio>
                         </Radio.Group>
                       </Form.Item>
                     </Col>
