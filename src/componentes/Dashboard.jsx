@@ -12,9 +12,9 @@ import {
     EditFilled,
     SaveOutlined,
     QuestionCircleOutlined,
-    EditOutlined
+    EditOutlined,
   } from '@ant-design/icons';
-  import { Layout, Menu, theme, Table, Button, Modal, Form, Input , Select, InputNumber, message, Col, Row, Badge, Radio, Popconfirm } from 'antd';
+  import { Layout, Menu, theme, Table, Button, Modal, Form, Input , Select, InputNumber, message, Col, Row, Badge, Radio, Popconfirm, Space } from 'antd';
   import React, { useState, useLayoutEffect, useRef } from 'react';
   const { Header, Sider, Content } = Layout;
   const URL_DEPARTAMENTO = "http://localhost/electronica/controlador/c_tienda.php";
@@ -63,11 +63,11 @@ import {
 
     const changeExistenciaProducto = (e) =>{
       setExisteProducto(e.target.value);
-      console.log(e.target.value);
       if(e.target.value == 1){
         setDisabledCotizacionBolivia(false);
       }else{
         setDisabledCotizacionBolivia(true);
+        setUrlCotizacionBolivia('');
       }
     }
 
@@ -75,6 +75,9 @@ import {
       setIsModalOpenCotizacionBolivia(false);
     };
     const handleCancelCotizacionBolivia = () => {
+      setStyleButton(true);
+      setTextButton('Agregar Cotizacion');
+      setColorButton('#389e0d');
       setIsModalOpenCotizacionBolivia(false);
     };
     const abrirCerrarModalCotizacionBolivia = () =>{
@@ -139,26 +142,30 @@ import {
 
     const onFinishCotizacionTiendaBolivia = async () => {     
       cargar();
-      const resp = await fetch(URL_COTIZACION_TIENDA_BOLIVIA, {
-        method: 'POST',
-        body: JSON.stringify({metodo:'agregarCotizacionTiendaBolivia',idTiendaBolivia:idTiendaBolivia,idProducto:idProducto,urlCotizacionBolivia:urlCotizacionBolivia,
-        precioUnitarioBolivia:precioUnitarioBolivia,pagoExtraBolivia:pagoExtraBolivia,stockBolivia:stockBolivia,cantidadBolivia:cantidadBolivia,
-        cotizacionBolivia:cotizacionBolivia,descuentoBolivia:descuentoBolivia,totalBolivia:totalBolivia
-      }),
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const respuesta = await resp.json();
-      // console.log(respuesta);
-      if(Number.isInteger(respuesta)){
-        solicitarCotizacionesTiendaBolivia(idProducto);
-        setUrlCotizacionBolivia('');
-        setPrecioUnitarioBolivia(0.0);
-        setPagoExtraBolivia(0.0);
-        setStockBolivia(0);
-        setCantidadBolivia(1);
-        setCotizacionBolivia(0.0);
-        setDescuentoBolivia(0.0);
-        setTotalBolivia(0.0);
+      if(textButton === 'Agregar Cotizacion'){
+        const resp = await fetch(URL_COTIZACION_TIENDA_BOLIVIA, {
+          method: 'POST',
+          body: JSON.stringify({metodo:'agregarCotizacionTiendaBolivia',idTiendaBolivia:idTiendaBolivia,idProducto:idProducto,urlCotizacionBolivia:urlCotizacionBolivia,
+          precioUnitarioBolivia:precioUnitarioBolivia,pagoExtraBolivia:pagoExtraBolivia,stockBolivia:stockBolivia,cantidadBolivia:cantidadBolivia,
+          cotizacionBolivia:cotizacionBolivia,descuentoBolivia:descuentoBolivia,totalBolivia:totalBolivia, existeProducto: existeProducto
+        }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const respuesta = await resp.json();
+        if(Number.isInteger(respuesta)){
+          solicitarCotizacionesTiendaBolivia(idProducto);
+          setUrlCotizacionBolivia('');
+          setPrecioUnitarioBolivia(0.0);
+          setPagoExtraBolivia(0.0);
+          setStockBolivia(0);
+          setCantidadBolivia(1);
+          setCotizacionBolivia(0.0);
+          setDescuentoBolivia(0.0);
+          setTotalBolivia(0.0);
+          setExisteProducto(1);
+        }
+      }else{
+
       }
     };
 
@@ -226,7 +233,6 @@ import {
         headers: { 'Content-Type': 'application/json' }
       });
       const respuesta = await resp.json();
-      console.log(respuesta)
       // if(respuesta.respuesta === 1){
       //   getListaProductos();
       //   setIsModalOpenEliminar(false);
@@ -240,11 +246,15 @@ import {
         title: 'ID',
         dataIndex: 'id_producto',
         key: 'id_producto',
+        align: 'center',
+        defaultSortOrder: 'descend',
+        sorter: (a, b) => a.id_producto - b.id_producto,
       },
       {
         title: 'Nombre',
         dataIndex: 'nombre_producto',
         key: 'nombre_producto',
+        align: 'center',
       },
       {
         title: 'Detalle',
@@ -255,6 +265,7 @@ import {
         title: 'Precio',
         dataIndex: 'precio_estandar',
         key: 'precio_estandar',
+        align: 'center',
       },
       {
         title: 'Acciones',
@@ -274,12 +285,14 @@ import {
         title: 'ID',
         dataIndex: 'id_cotizacion_tienda_bolivia',
         key: 'id_cotizacion_tienda_bolivia',
+        defaultSortOrder: 'descend',
+        sorter: (a, b) => a.id_cotizacion_tienda_bolivia - b.id_cotizacion_tienda_bolivia,
       },
       {
         title: 'Tiene',
         dataIndex: 'existe_producto_tienda',
         key: 'existe_producto_tienda',
-        render: (text) => text == 1 ? <Badge status='success' text='Si' /> : <Badge status='warning' text={text} /> ,
+        render: (text) => text == 1 ? <Badge status='success' text='Si' /> : <Badge status='warning' text='No' /> ,
       },
       {
         title: 'Nombre',
@@ -295,7 +308,7 @@ import {
         title: 'Direccion URL',
         dataIndex: 'url_producto_tienda_bolivia',
         key: 'url_producto_tienda_bolivia',
-        render: (text) => <a href={text} target="_blank" rel="noreferrer" >Enlace</a>,
+        render: (text) => text === '' ? '' : <a href={text} target="_blank" rel="noreferrer" >Enlace</a>,
       },
       {
         title: 'Precio U.',
@@ -432,7 +445,7 @@ import {
       id:"",
       metodo:"agregarProducto",
       nombre:"",
-      precio:"",
+      precio:0.0,
       detalle:"",
       estado: "1"
     });
@@ -487,7 +500,13 @@ import {
       });
       const respuesta = await resp.json();
       if(Number.isInteger(respuesta.respuesta)){
-        setProducto({...producto, id: Number.parseInt(respuesta.respuesta)});
+        // setProducto({...producto, id: Number.parseInt(respuesta.respuesta)});
+        setProducto({...producto, id:''});
+        setProducto({...producto, precio:0.0});
+        setProducto({...producto, nombre:''});
+        setProducto({...producto, detalle:''});
+        setProducto({...producto, estado:''});
+
         getListaProductos();
         setIsModalOpen(false);
       }
@@ -554,7 +573,6 @@ import {
       try {
           const fetchResponse = await fetch(URL_COTIZACION_TIENDA_BOLIVIA, settings);
           const datos = await fetchResponse.json();
-          // console.log(datos);
           setCotizacionesBolivia(datos);
           return datos;
       } catch (e) {
@@ -688,9 +706,7 @@ import {
     
 
     const [isModalOpenEliminar, setIsModalOpenEliminar] = useState(false);
-    // const showModalEliminar = () => {
-    //   setIsModalOpenEliminar(true);
-    // };
+
     const handleOkEliminar = () => {
       setIsModalOpenEliminar(false);
     };
@@ -721,9 +737,6 @@ import {
 
     //=================================================
     const [isModalOpenProductoTienda, setIsModalOpenProductoTienda] = useState(false);
-    // const showModalEliminar = () => {
-    //   setIsModalOpenEliminar(true);
-    // };
     const handleOkProductoTienda = () => {
       setIsModalOpenProductoTienda(false);
     };
@@ -816,9 +829,9 @@ import {
               background: colorBgContainer,
             }}
           >
-            <h2>Listar productos</h2>
-            <Button type="primary" onClick={showModal}>Agregar</Button>
-            <Modal title="Agregar Producto" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}
+            <Space direction="horizontal" style={{width: '100%', justifyContent: 'center'}}><h2>Listar productos</h2></Space>
+            <Button type="primary" onClick={showModal}>Agregar producto</Button>
+            <Modal title={<><PlusSquareOutlined style={{color:'green',fontSize: '18px'}} /> Agregar producto </>} open={isModalOpen} onOk={handleOk} onCancel={handleCancel}
               footer={[<Button onClick={abrirCerrarModalInsertar} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myForm" key="submit" htmlType="submit" >Agregar</Button> ]}>
               <hr />
               <br />
@@ -870,7 +883,7 @@ import {
               </Form>
             </Modal>
 
-            <Modal title={<><EditOutlined style={{backgroundColor:'yellow',fontSize: '18px'}} /> Editar producto </>} open={isModalOpenEditar} onOk={handleOkEditar} onCancel={handleCancelEditar}
+            <Modal title={<><EditOutlined style={{color:'#d4b106',fontSize: '18px'}} /> Editar producto </>} open={isModalOpenEditar} onOk={handleOkEditar} onCancel={handleCancelEditar}
               footer={[<Button onClick={abrirCerrarModalEditar} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myFormEditar" key="submit" htmlType="submit" > Actualizar</Button> ]}>
               <hr />
               <br />
@@ -1050,7 +1063,7 @@ import {
                   <Row gutter={12}>
                     <Col span={12}>
                       <Form.Item name="radio-group" label="Existe producto?">
-                        <Radio.Group value={existeProducto} onChange={changeExistenciaProducto}>
+                        <Radio.Group defaultValue={existeProducto} onChange={changeExistenciaProducto}>
                           <Radio value={1}>Si</Radio>
                           <Radio value={0}>No</Radio>
                         </Radio.Group>

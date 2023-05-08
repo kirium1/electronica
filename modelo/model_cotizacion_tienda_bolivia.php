@@ -23,14 +23,14 @@
         }
 
         public function agregarCotizacionTiendaBolivia($idTiendaBolivia,$idProducto,$urlCotizacionBolivia,$fecha,$precioUnitarioBolivia,
-        $pagoExtraBolivia,$stockBolivia,$cantidadBolivia,$cotizacionBolivia,$descuentoBolivia,$totalBolivia){
+        $pagoExtraBolivia,$stockBolivia,$cantidadBolivia,$cotizacionBolivia,$descuentoBolivia,$totalBolivia,$existeProducto){
             $sql = "INSERT INTO cotizacion_tienda_bolivia(id_producto,id_tienda_bolivia,precio_unidad,url_producto_tienda_bolivia,fecha_cotizacion,
-            pago_extra,stock_actual,cantidad_producto,precio_cotizacion,descuento_cotizacion,total_cotizacion) VALUES(:idProducto,:idTiendaBolivia,
-            :precioUnitarioBolivia,:urlCotizacionBolivia,:fecha,:pagoExtraBolivia,:stockBolivia,:cantidadBolivia,:cotizacionBolivia,:descuentoBolivia,:totalBolivia);";
+            pago_extra,stock_actual,cantidad_producto,precio_cotizacion,descuento_cotizacion,total_cotizacion,existe_producto_tienda) VALUES(:idProducto,:idTiendaBolivia,
+            :precioUnitarioBolivia,:urlCotizacionBolivia,:fecha,:pagoExtraBolivia,:stockBolivia,:cantidadBolivia,:cotizacionBolivia,:descuentoBolivia,:totalBolivia,:existeProducto);";
             $sentenceSQL = $this->connexion_bd->prepare($sql);
             $res = $sentenceSQL->execute(array(':idProducto'=>$idProducto,':idTiendaBolivia'=>$idTiendaBolivia,':precioUnitarioBolivia'=>$precioUnitarioBolivia,':urlCotizacionBolivia'=>$urlCotizacionBolivia,
             ':fecha'=>$fecha,':pagoExtraBolivia'=>$pagoExtraBolivia,':stockBolivia'=>$stockBolivia,':cantidadBolivia'=>$cantidadBolivia,
-            ':cotizacionBolivia'=>$cotizacionBolivia,':descuentoBolivia'=>$descuentoBolivia,':totalBolivia'=>$totalBolivia));
+            ':cotizacionBolivia'=>$cotizacionBolivia,':descuentoBolivia'=>$descuentoBolivia,':totalBolivia'=>$totalBolivia,':existeProducto'=>$existeProducto));
             if($res === true){
                 $res = intval($this->connexion_bd->lastInsertId());
             }

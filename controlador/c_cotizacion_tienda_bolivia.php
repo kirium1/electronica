@@ -27,8 +27,9 @@
             $cotizacionBolivia = $_POST['cotizacionBolivia'];
             $descuentoBolivia = $_POST['descuentoBolivia'];
             $totalBolivia = $_POST['totalBolivia'];
+            $existeProducto = $_POST['existeProducto'];
             $respuesta = $cotizacionTiendaBolivia->agregarCotizacionTiendaBolivia($idTiendaBolivia,$idProducto,$urlCotizacionBolivia,$fecha,$precioUnitarioBolivia,
-            $pagoExtraBolivia,$stockBolivia,$cantidadBolivia,$cotizacionBolivia,$descuentoBolivia,$totalBolivia);
+            $pagoExtraBolivia,$stockBolivia,$cantidadBolivia,$cotizacionBolivia,$descuentoBolivia,$totalBolivia,$existeProducto);
             $res = json_encode($respuesta, JSON_PRETTY_PRINT);
             break;
         case 'eliminarCotizacionBolivia':
