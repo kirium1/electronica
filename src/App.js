@@ -4,47 +4,11 @@ import React, { useState } from 'react';
 import 'antd/dist/reset.css';
 import './App.css';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { Landing, Home, Admin, Analytics , Dashboard } from './pages';
+import { Landing, Home, Admin, Analytics , Dashboard, MyTiendaBolivia } from './pages';
 import { ProtectRoute } from './componentes/ProtectRoute';
-// const App = () => (
-//   <div className="App">
-//     <Login/>
-//   </div>
-// );
-
-// import { createBrowserRouter, RouterProvider } from "react-router-dom";
-
-// import Home from './routes/home';
-// import Aliexpress from "./routes/aliexpress";
-// import Bolivia from "./routes/bolivia";
-
-// const router = createBrowserRouter([
-//   {
-//       path:'/',
-//       element: <Home />,
-//       errorElement: <h1>Error</h1>
-//   },
-//   {
-//       path:'/Bolivia',
-//       element: <Bolivia />,
-//   },
-//   {
-//       path:'/Aliexpress',
-//       element:  <Aliexpress />,
-//   },
-// ]);
 
 function App(){
-  // const [conectado,setConectado] = useState(false);
-  // const acceder = (estado) =>{
-  //   setConectado(estado);
-  // }
-  // return (conectado ? <Menu/> : <Login acceder={acceder} /> );
-  // return <Menu/>
-  // <RouterProvider router={router}/>
-
   const [user, setUser] = useState(null);
-
   const login = () => {
     setUser({
       id:1,
@@ -58,24 +22,19 @@ function App(){
   return (
     <BrowserRouter>
       <Navigation/>
-
       {
         user ? (<button onClick={logout}>Logout</button>) : (<button onClick={login}> Login</button>)
       }
-
       <Routes> 
         <Route index element={<Landing/>} />
         <Route path='/landing' element={<Landing/>} />
+        <Route path='/tiendaBolivia' element={<MyTiendaBolivia/>} />
         <Route element={<ProtectRoute isAllowed={!!user}/>}>
           <Route path='/home' element={<Home />} />
           <Route path='/dashboard' element={<Dashboard/>} />
         </Route>
         <Route path='/analytics' element={
-          <ProtectRoute 
-            isAllowed={!!user && user.permissions.includes('analize')} 
-            redirectTo="/home"
-          > 
-            
+          <ProtectRoute isAllowed={!!user && user.permissions.includes('analize')} redirectTo="/home"> 
             <Analytics/>
           </ProtectRoute> 
         } />
@@ -92,7 +51,10 @@ function Navigation(){
         <Link to="/landing">Landing</Link>
       </li>
       <li>
-        <Link to="/home">Home</Link>
+        <Link to="/home">Tiendas Aliexpress</Link>
+      </li>
+      <li>
+        <Link to="/tiendaBolivia">Tiendas Bolivia</Link>
       </li>
       <li>
         <Link to="/dashboard">Dashboard</Link>
