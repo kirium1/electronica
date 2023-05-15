@@ -14,11 +14,23 @@
             $respuesta = $tiendaBolivia->listarTiendasBolivia();
             $res = json_encode($respuesta, JSON_PRETTY_PRINT);
             break;
+        case 'agregarTiendaBolivia':
+            $nombre = $_POST['nombre'];
+            $estado = $_POST['estado'];
+            $direccion = $_POST['direccion'];
+            $respuesta = $tiendaBolivia->agregarTiendaBolivia($nombre,$estado,$direccion);
+            $res = json_encode($respuesta, JSON_PRETTY_PRINT);
+            break;
+        case 'eliminarTiendaBolivia':
+            $idTiendaBolivia = $_POST['idTiendaBolivia'];
+            $respuesta = $tiendaBolivia->eliminarTiendaBolivia($idTiendaBolivia);
+            $res = json_encode($respuesta, JSON_PRETTY_PRINT);
+            break;
         default:
             # code...
             break;
     }
     $tiendaBolivia->cerrarConexion();
-    header("Content-Type: application/json");
+    // header("Content-Type: application/json");
     // echo json_encode($res);
     echo $res;
