@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom';
 import { blue, green, yellow } from '@ant-design/colors';
 import ModalCrearTienda from './ModalCrearTienda';
 import ModalEliminarTienda from './ModalEliminarTienda';
-import ModalEditarTienda from './ModalEditarTienda';
+import { PlusOutlined } from '@ant-design/icons';
+// import ModalEditarTienda from './ModalEditarTienda';
 
 // import Button from 'react-bootstrap/Button';
 import {
@@ -17,10 +18,11 @@ import {
   import React, { useState, useLayoutEffect, useRef } from 'react';
   const { Header, Sider, Content } = Layout;
   const TIENDA_BOLIVIA = "http://localhost/electronica/controlador/c_tienda_bolivia.php";
-  
-  let nombreEditar = '';
 
   export const TiendaBolivia = () => {
+    const { Option } = Select;
+    const [form] = Form.useForm();
+
     // modal crear tienda 
     const successColor = '#52c41a';
     const [modalVisible, setModalVisible] = useState(false);
@@ -30,7 +32,7 @@ import {
     };
 
     const handleSubmit = values => {
-      console.log(values);
+      // console.log(values);
       setModalVisible(false);
     };
     //fin crear tienda
@@ -48,9 +50,24 @@ import {
 
     // Editar tienda bolivia 
     const [modalEditarVisible, setModalEditarVisible] = useState(false);
-    const [nombreEditarTiendaBolivia, setNombreEditarTiendaBolivia] = useState('');
+    const [editarTienda, setEditarTienda] = useState({
+      nombre:'prueba',
+      direccion:'url prueba'
+    });
+
     const handleCancelEditar = () => {
+      form.resetFields();
       setModalEditarVisible(false);
+    };
+
+    const handleSubmitActualizar = () => {
+      form.validateFields().then(values => {
+        // form.resetFields();
+        // onSubmit(values);
+        values.metodo = 'actualizarTiendaBolivia';
+        values.idTiendaBolivia = idTiendaBolivia;
+        actualizarTiendaBolivia(values);
+      });
     };
 
     ///
@@ -100,20 +117,39 @@ import {
     ];
 
     const seleccionarTienda = (tienda ,data,caso)=>{
-      // console.log(data);
+      console.log(data);
+      setIdTiendaBolivia(data.id_tienda_bolivia);
       if(caso === 'Eliminar'){
-        setIdTiendaBolivia(data.id_tienda_bolivia);
         setNombreEliminarTiendaBolivia(data.nombre_tienda);
         setUrlEliminarTiendaBolivia(data.url_tienda_bolivia);
         setModalEliminarVisible(true);
       }
       if(caso === 'Editar'){
-        setNombreEditarTiendaBolivia(data.nombre_tienda);
-        nombreEditar = data.nombre_tienda;
-        console.log(nombreEditar);
+        form.setFieldsValue({ nombre: data.nombre_tienda });
+        form.setFieldsValue({ direccion: data.url_tienda_bolivia });
+        form.setFieldsValue({ estado: data.estado_tienda_bolivia });
         setModalEditarVisible(true);
       }
     }
+
+    const actualizarTiendaBolivia = async (values) => {     
+      console.log(values);
+      const resp = await fetch(TIENDA_BOLIVIA, {
+        method: 'POST',
+        body: JSON.stringify(values),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const respuesta = await resp.json();
+      console.log(respuesta);
+      setModalEditarVisible(false);
+      if(respuesta.respuesta === 1){
+        form.resetFields();
+        // let nuevoElemento = {'id_tienda_bolivia':respuesta.respuesta, 'nombre_tienda': values.nombre, 
+        // 'estado_tienda_bolivia':values.estado,'url_tienda_bolivia':values.direccion};
+        // setTiendasBolivia([...tiendasBolivia, nuevoElemento])
+        getListaTiendasBolivia();
+      }
+    };
 
     const getListaTiendasBolivia = async () => {
       const settings = {
@@ -193,7 +229,39 @@ import {
         </Layout>
         <ModalCrearTienda visible={modalVisible} onCancel={handleCancel} onSubmit={handleSubmit} successColor={successColor} tiendasBolivia={tiendasBolivia} setTiendasBolivia={setTiendasBolivia} />
         <ModalEliminarTienda visible={modalEliminarVisible} onCancel={handleCancelEliminar} tiendasBolivia={tiendasBolivia} setTiendasBolivia={setTiendasBolivia} nombreEliminarTiendaBolivia={nombreEliminarTiendaBolivia} urlEliminarTiendaBolivia= {urlEliminarTiendaBolivia} idTiendaBolivia={idTiendaBolivia} />
-        <ModalEditarTienda  visible={modalEditarVisible} onCancel={handleCancelEditar} nombreEditar={nombreEditar}  nombreEditarTiendaBolivia={nombreEditarTiendaBolivia} />
+        <Modal 
+        open={modalEditarVisible}
+        title={<><PlusOutlined  style={{color:'#73d13d',fontSize: '18px'}} /> Editar tienda Bolivia </>}
+        onCancel={handleCancelEditar}
+        footer={[ <Button key="cancel" onClick={handleCancelEditar}> Cancel </Button>,    
+        <Button key="submit" type="primary" style={{ backgroundColor: successColor, borderColor: successColor }} onClick={handleSubmitActualizar}>Actualizar </Button>,]}>
+            <hr />
+            <br />
+          <Form form={form} layout="vertical" initialValues={editarTienda}>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Form.Item name="nombre" label="Nombre" rules={[{ required: true, message: 'Escriba el nombre de la tienda!' }]}>
+                        <Input />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item name="estado" label="Estado" rules={[{ required: true, message: 'Seleccione el estado!' }]}>
+                        <Select placeholder="Seleccione una opcion">
+                            <Option value="1">Si</Option>
+                            <Option value="0">No</Option>
+                        </Select>
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Row>
+                <Col span={24}>
+                    <Form.Item name="direccion" label="Direccion" rules={[{ required: true, message: 'Escriba la direccion url de la tienda!' }]}>
+                        <Input/>
+                    </Form.Item>
+                </Col>
+            </Row>
+          </Form>
+        </Modal>
       </Layout>
     );
   };

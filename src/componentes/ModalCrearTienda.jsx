@@ -16,20 +16,20 @@ const ModalCrearTienda = ({ visible, onCancel, onSubmit, successColor , tiendasB
     };
 
     const agregarTiendaBolivia = async (values) => {     
-        console.log(values);
-        const resp = await fetch(TIENDA_BOLIVIA, {
-          method: 'POST',
-          body: JSON.stringify(values),
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const respuesta = await resp.json();
-        if(Number.isInteger(respuesta.respuesta)){
-          let nuevoElemento = {'id_tienda_bolivia':respuesta.respuesta, 'nombre_tienda': values.nombre, 
-          'estado_tienda_bolivia':values.estado,'url_tienda_bolivia':values.direccion};
-          setTiendasBolivia([...tiendasBolivia, nuevoElemento])
-          // getListaTiendasBolivia();
-        }
-      };
+      console.log(values);
+      const resp = await fetch(TIENDA_BOLIVIA, {
+        method: 'POST',
+        body: JSON.stringify(values),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const respuesta = await resp.json();
+      if(Number.isInteger(respuesta.respuesta)){
+        let nuevoElemento = {'id_tienda_bolivia':respuesta.respuesta, 'nombre_tienda': values.nombre, 
+        'estado_tienda_bolivia':values.estado,'url_tienda_bolivia':values.direccion};
+        setTiendasBolivia([...tiendasBolivia, nuevoElemento])
+        // getListaTiendasBolivia();
+      }
+    };
   
     return (
         <Modal 
@@ -37,7 +37,7 @@ const ModalCrearTienda = ({ visible, onCancel, onSubmit, successColor , tiendasB
         title={<><PlusOutlined  style={{color:'#73d13d',fontSize: '18px'}} /> Crear tienda Bolivia </>}
         onCancel={onCancel}
         footer={[ <Button key="cancel" onClick={onCancel}> Cancel </Button>,    
-        <Button key="submit" type="primary" style={{ backgroundColor: successColor, borderColor: successColor }} onClick={handleSubmit}>Agregar </Button>,]}>
+        <Button key="submit" type="primary" onClick={handleSubmit} style={{ backgroundColor: successColor, borderColor: successColor }}>Agregar </Button>,]}>
             <hr />
             <br />
           <Form form={form} layout="vertical">

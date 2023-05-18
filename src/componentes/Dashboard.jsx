@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { blue, green, yellow } from '@ant-design/colors';
-// import Button from 'react-bootstrap/Button';
+import { green } from '@ant-design/colors';
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
@@ -13,9 +12,13 @@ import {
     SaveOutlined,
     QuestionCircleOutlined,
     EditOutlined,
+    UploadOutlined
   } from '@ant-design/icons';
-  import { Layout, Menu, theme, Table, Button, Modal, Form, Input , Select, InputNumber, message, Col, Row, Badge, Radio, Popconfirm, Space } from 'antd';
+  import { Layout, Menu, theme, Table, Button, Modal, Form, Input , Select, InputNumber, message, Col, Row, Badge, Radio, Popconfirm, Space, Empty, Image } from 'antd';
   import React, { useState, useLayoutEffect, useRef } from 'react';
+  import ModalAgregarProducto from './ModalAgregarProducto';
+  import ModalEliminarProducto from './ModalEliminarProducto';
+
   const { Header, Sider, Content } = Layout;
   const URL_DEPARTAMENTO = "http://localhost/electronica/controlador/c_tienda.php";
   const URL_PRODUCTO = "http://localhost/electronica/controlador/c_producto.php";
@@ -24,9 +27,15 @@ import {
   const URL_COTIZACION_TIENDA_BOLIVIA = "http://localhost/electronica/controlador/c_cotizacion_tienda_bolivia.php";
   const TIENDA_BOLIVIA = "http://localhost/electronica/controlador/c_tienda_bolivia.php";
 
+  const CATEGORIA = "http://localhost/electronica/controlador/c_categoria.php";
+
   // const dataSource = [];
 
   export const MyDashboard = () => {
+
+    const [categorias,setCategorias] = useState([]);
+    // const [idProducto,setIdProducto] = useState('');
+
     const [messageApi, contextHolder] = message.useMessage();
 
     const [idCotizacionBolivia,setIdCotizacionBolivia] = useState(0);
@@ -98,14 +107,12 @@ import {
     }
     function changePagoExtraBolivia(value) {
       setPagoExtraBolivia(value);
-      // calcularTotalCotizacionBolivia();
     }
     function changeStockBolivia(value) {
       setStockBolivia(value);
     }
     function changeCantidadBolivia(value) {
       setCantidadBolivia(value);
-      // calcularTotalCotizacionBolivia();
     }
     function changeCotizacionTotalBolivia(value) {
       setCotizacionBolivia(value);
@@ -179,39 +186,16 @@ import {
       const respuesta = await resp.json();
       if(respuesta.respuesta === 1){
         solicitarCotizacionesTiendaBolivia(idProducto);
-        // getListaProductos();
-        // console.log(cotizacionBolivia);
-        // let myData = cotizacionesBolivia.filter(item => item.id_cotizacion_tienda_bolivia !== idCotizacionBolivia);
-        // console.log(myData);
-        // setCotizacionBolivia(myData);
       }
-      // console.log(respuesta)
     };
 
     const cancelEliminarCotizacionBolivia = (e) => {
-      console.log(e);
       message.error('Click on No');
     };
 
     const seleccionarCotizacion = (product,data,caso)=>{
       setIdCotizacionBolivia(data.id_cotizacion_tienda_bolivia);
-      // setNombreEditar(data.nombre_producto);
-      // setDetalleEditar(data.detalle_producto);
-      // setEstadoEditar(data.estado_producto);
-      // setPrecioEditar(data.precio_estandar);
-      // if(caso==='Eliminar'){
-      //   eliminarCotizacionTiendaBolivia();
-      // }
       if(caso==='Editar'){
-        // setNombreEditar(data.nombre_producto);
-        // console.log(data.id_tienda_bolivia);
-        // let nuevoArreglo = [];
-        // nuevoArreglo = tiendasBolivia.forEach(element => {
-        //   if(element.id_tienda_bolivia == data.id_tienda_bolivia){
-        //     nuevoArreglo.push();
-        //   }
-        // });
-        // console.log(data.id_tienda_bolivia);
         setTiendaBolivaDefecto(data.id_tienda_bolivia);
         setUrlCotizacionBolivia(data.url_producto_tienda_bolivia);
         setPrecioUnitarioBolivia(parseFloat(data.precio_unidad));
@@ -225,20 +209,6 @@ import {
       }
     }
 
-    const eliminarCotizacionTiendaBolivia = async () =>{
-      
-      const resp = await fetch(URL_COTIZACION_TIENDA_BOLIVIA, {
-        method: 'POST',
-        body: JSON.stringify({metodo:'eliminarCotizacionBolivia',idCotizacionBolivia}),
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const respuesta = await resp.json();
-      // if(respuesta.respuesta === 1){
-      //   getListaProductos();
-      //   setIsModalOpenEliminar(false);
-      // }
-    }
-
     // =====================================================
 
     const columns = [
@@ -249,6 +219,20 @@ import {
         align: 'center',
         defaultSortOrder: 'descend',
         sorter: (a, b) => a.id_producto - b.id_producto,
+      },
+      {
+        title: 'Imagen',
+        dataIndex: 'img_defecto',
+        key: 'img_defecto',
+        align: 'center',
+        // render: (image) => image != ''? <img src={image} alt="Imagen" style={{ width: '100px' }} /> : <Empty />,
+        render: (image) => image != null ? <Image src={image} width={150} height={150} /> :  <Image
+        width={150}
+        height={150}
+        src="error"
+        fallback="data:image/png;base64,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"
+      />,
+       
       },
       {
         title: 'Nombre',
@@ -453,7 +437,7 @@ import {
     const [idProducto,setIdProducto] = useState(0);
     const [nombreEditar,setNombreEditar] = useState('');
     const [detalleEditar,setDetalleEditar] = useState('');
-    const [precioEditar,setPrecioEditar] = useState('');
+    const [precioEditar,setPrecioEditar] = useState(0.0);
     const [estadoEditar,setEstadoEditar] = useState(1);
 
     const [productos,setProductos] =  useState([]);
@@ -463,6 +447,7 @@ import {
   
   
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     const showModal = () => {
       setIsModalOpen(true);
     };
@@ -472,44 +457,9 @@ import {
     const handleCancel = () => {
       setIsModalOpen(false);
     };
-    const abrirCerrarModalInsertar = () =>{
-      setIsModalOpen(!isModalOpen);
-    }
+
     const onFinishFailed = (errorInfo) => {
       console.log('Failed:', errorInfo);
-    };
-
-    const changeValor = e =>{
-      const {name,value} = e.target;
-      setProducto({...producto,[name]:value});
-    }
-    
-    function handleChangeSelect(value) {
-      setProducto({...producto, estado: value})
-    }
-
-    function handleChangeNumber(value) {
-      setProducto({...producto, precio: value})
-    }
-
-    const onFinish = async () => {
-      const resp = await fetch('http://localhost/electronica/controlador/c_producto.php', {
-        method: 'POST',
-        body: JSON.stringify(producto),
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const respuesta = await resp.json();
-      if(Number.isInteger(respuesta.respuesta)){
-        // setProducto({...producto, id: Number.parseInt(respuesta.respuesta)});
-        setProducto({...producto, id:''});
-        setProducto({...producto, precio:0.0});
-        setProducto({...producto, nombre:''});
-        setProducto({...producto, detalle:''});
-        setProducto({...producto, estado:''});
-
-        getListaProductos();
-        setIsModalOpen(false);
-      }
     };
 
     const [isModalOpenEditar, setIsModalOpenEditar] = useState(false);
@@ -550,7 +500,10 @@ import {
       setEstadoEditar(data.estado_producto);
       setPrecioEditar(data.precio_estandar);
       (caso==='Editar') && abrirCerrarModalEditar();
-      (caso==='Eliminar') && abrirCerrarModalEliminar();
+      // (caso==='Eliminar') && abrirCerrarModalEliminar();
+      if(caso === 'Eliminar'){
+        setIsModalOpenEliminar(true);
+      }
       (caso==='CotizacionAliexpress') && abrirCerrarModalProductoTienda();
       if(caso==='CotizacionAliexpress'){
         solicitarCotizacionesTiendaAliexpress();
@@ -582,12 +535,12 @@ import {
 
     const solicitarCotizacionesTiendaAliexpress = async () => {
       const settings = {
-          method: 'POST',
-          body: JSON.stringify({metodo:'solicitarCotizacionesTiendaAliexpress'}),
-          headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-          }
+        method: 'POST',
+        body: JSON.stringify({metodo:'solicitarCotizacionesTiendaAliexpress'}),
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        }
       };
       try {
           const fetchResponse = await fetch(URL_COTIZACION_TIENDA_ALIEXPRESS, settings);
@@ -628,7 +581,34 @@ import {
       getListaTiendasBolivia();
       getListaProductos();
       getListaTiendasAliexpress();
+      getListaCategorias();
     }, []);
+
+    const getListaCategorias = async () => {
+      const settings = {
+          method: 'POST',
+          body: JSON.stringify({metodo:'listarCategorias'}),
+          headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+          }
+      };
+      try {
+          const fetchResponse = await fetch(CATEGORIA, settings);
+          const datos = await fetchResponse.json();
+          let opciones = [];
+          if(datos.length >= 1){
+            datos.forEach(element => {
+              let obj = {label: element.nombre_categoria, value:element.id_categoria}
+              opciones.push(obj);
+            });
+          }
+          setCategorias(opciones);
+          return datos;
+      } catch (e) {
+          return e;
+      }    
+    }
     
     const getListaTiendasBolivia = async () => {
       const settings = {
@@ -642,14 +622,6 @@ import {
       try {
           const fetchResponse = await fetch(TIENDA_BOLIVIA, settings);
           const datos = await fetchResponse.json();
-          // let tiendas = [];
-          // let index = 0;
-          // data.forEach(element => {
-          //   let myKey = String(index + 1);
-          //   tiendas.push({ label: (<Button type="primary" block onClick={({}) => obtenerPrductosTienta(element.id_tienda_bolivia)}>{element.nombre_tienda}</Button>), key: myKey });
-          //   index++;
-          // });
-          // setNavTienda(tiendas);
           let opciones = [];
           datos.forEach(element => {
             opciones.push({value:element.id_tienda_bolivia, label: element.nombre_tienda});
@@ -714,26 +686,26 @@ import {
       setIsModalOpenEliminar(false);
     };
     const abrirCerrarModalEliminar = () =>{
+      
       setIsModalOpenEliminar(!isModalOpenEliminar);
     }
     const onFinishFailedEliminar = (errorInfo) => {
       console.log('Failed:', errorInfo);
     };
 
-    const onFinishEliminar = async () => {     
-      // console.log('aqui');
-      cargar();
-      const resp = await fetch('http://localhost/electronica/controlador/c_producto.php', {
-        method: 'POST',
-        body: JSON.stringify({metodo:'eliminarProducto',idProducto}),
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const respuesta = await resp.json();
-      if(respuesta.respuesta === 1){
-        getListaProductos();
-        setIsModalOpenEliminar(false);
-      }
-    };
+    // const onFinishEliminar = async () => {     
+    //   cargar();
+    //   const resp = await fetch('http://localhost/electronica/controlador/c_producto.php', {
+    //     method: 'POST',
+    //     body: JSON.stringify({metodo:'eliminarProducto',idProducto}),
+    //     headers: { 'Content-Type': 'application/json' }
+    //   });
+    //   const respuesta = await resp.json();
+    //   if(respuesta.salida === 'Exito'){
+    //     getListaProductos();
+    //     setIsModalOpenEliminar(false);
+    //   }
+    // };
 
     //=================================================
     const [isModalOpenProductoTienda, setIsModalOpenProductoTienda] = useState(false);
@@ -831,57 +803,9 @@ import {
           >
             <Space direction="horizontal" style={{width: '100%', justifyContent: 'center'}}><h2>Listar productos</h2></Space>
             <Button type="primary" onClick={showModal}>Agregar producto</Button>
-            <Modal title={<><PlusSquareOutlined style={{color:'green',fontSize: '18px'}} /> Agregar producto </>} open={isModalOpen} onOk={handleOk} onCancel={handleCancel}
-              footer={[<Button onClick={abrirCerrarModalInsertar} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myForm" key="submit" htmlType="submit" >Agregar</Button> ]}>
-              <hr />
-              <br />
-              <Form id="myForm" name="basic" labelCol={{span: 8,}} wrapperCol={{span: 16,}} style={{maxWidth: 600,}} initialValues={{remember: true,}} onFinish={onFinish} onFinishFailed={onFinishFailed} autoComplete="off">
-                <Form.Item label="Nombre producto"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Escriba el nombre de la ciudad!',
-                    },
-                  ]}
-                >
-                  <Input name="nombre" onChange={changeValor} />
-                </Form.Item>
-
-                <Form.Item label="Precio producto"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Escriba el precio del producto!',
-                    },
-                  ]}
-                >
-                  <InputNumber name="precio" onChange={handleChangeNumber} />
-                </Form.Item>
-
-                <Form.Item label="Detalle producto"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Escriba detalle del producto!',
-                    },
-                  ]}
-                >
-                  <Input name="detalle" onChange={changeValor} />
-                </Form.Item>
-
-                <Form.Item label="Estado" rules={[
-                    {
-                      required: true,
-                      message: 'Seleccione una opcion!',
-                    },
-                  ]}>
-                  <Select defaultValue="1" name="estado" onChange={handleChangeSelect}>
-                    <Select.Option value="1">Activo</Select.Option>
-                    <Select.Option value="0">Inactivo</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Form>
-            </Modal>
+            <br />
+            <br />
+            <ModalAgregarProducto visible={isModalOpen} onCancel={handleCancel} handleOk={handleOk} categorias={categorias}  getListaProductos={getListaProductos} />
 
             <Modal title={<><EditOutlined style={{color:'#d4b106',fontSize: '18px'}} /> Editar producto </>} open={isModalOpenEditar} onOk={handleOkEditar} onCancel={handleCancelEditar}
               footer={[<Button onClick={abrirCerrarModalEditar} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myFormEditar" key="submit" htmlType="submit" > Actualizar</Button> ]}>
@@ -934,15 +858,17 @@ import {
                 </Form.Item>
               </Form>
             </Modal>
+            
 
-            <Modal title={<><PlusSquareOutlined /> Eliminar producto </>} open={isModalOpenEliminar} onOk={handleOkEliminar} onCancel={handleCancelEliminar}
+            {/* <Modal title={<><PlusSquareOutlined /> Eliminar producto </>} open={isModalOpenEliminar} onOk={handleOkEliminar} onCancel={handleCancelEliminar}
               footer={[<Button onClick={abrirCerrarModalEliminar} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myFormEliminar" key="submit" htmlType="submit" >Eliminar</Button> ]}>
               <hr />
               <br />
               <Form id="myFormEliminar" name="basic" style={{maxWidth: 600,}} initialValues={{remember: true,}} onFinish={onFinishEliminar} onFinishFailed={onFinishFailedEliminar} autoComplete="off">
                 <span>Usted esta deacuerdo con eliminar el producto con nombre <strong>{nombreEditar}</strong> con precio de <strong>{precioEditar}</strong></span>
               </Form>
-            </Modal>
+            </Modal> */}
+            <ModalEliminarProducto visible={isModalOpenEliminar} getListaProductos={getListaProductos} precioProducto={precioEditar} nombreProducto={nombreEditar} idProducto={idProducto} onCancel={handleOkEliminar} />
 
             <Modal title={<><PlusSquareOutlined /> Productos por tienda </>} width={1500} open={isModalOpenProductoTienda} onOk={handleOkProductoTienda} onCancel={handleCancelProductoTienda}
               footer={[<Button onClick={abrirCerrarModalProductoTienda} type='primary' danger>Cancelar</Button>, <Button type='primary' form="myFormProductoTienda" key="submit" htmlType="submit" >Agregar</Button> ]}>
@@ -1006,7 +932,6 @@ import {
                   <Row gutter={16}>
                     <Col span={7}>
                       <Form.Item label="Tienda Bolivia" rules={[{required: true, message: 'Escriba el nombre de la ciudad!',},]}>
-                        {/* value={tiendaBolivaDefecto} */}
                         <Select options={tiendasBolivia} onChange={handleChangeTiendaBolivia}></Select>
                       </Form.Item>
                     </Col>
@@ -1077,8 +1002,7 @@ import {
                 </Form> 
                 <Table dataSource={cotizacionesBolivia}  style={{width: '100%'}} columns={columnsCotizacionBolivia} />
               </Modal>
-
-            <Table dataSource={productos} columns={columns} />;
+            <Table dataSource={productos} bordered columns={columns} />;
           </Content>
         </Layout>
       </Layout>

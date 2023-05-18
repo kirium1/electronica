@@ -3,17 +3,31 @@ import React, { useRef, useState } from 'react';
 import {PlusOutlined } from '@ant-design/icons';
 const TIENDA_BOLIVIA = "http://localhost/electronica/controlador/c_tienda_bolivia.php";
 
-const ModalEditarTienda = ({ visible, onCancel, onSubmit, successColor , tiendasBolivia, setTiendasBolivia, nombreEditarTiendaBolivia, nombreEditar }) => {
+const ModalEditarTienda = ({ visible, setModalEditarVisible , onCancel, onSubmit, successColor , tiendasBolivia, setTiendasBolivia, editarTienda }) => {
     const { Option } = Select;
     const [form] = Form.useForm();
+    // form.resetFields();
 
     const handleSubmit = () => {
-      form.validateFields().then(values => {
-        form.resetFields();
-        onSubmit(values);
-        values.metodo = 'agregarTiendaBolivia';
-        agregarTiendaBolivia(values)
-      });
+      // form.validateFields().then(values => {
+      //   form.resetFields();
+      //   onSubmit(values);
+      //   values.metodo = 'agregarTiendaBolivia';
+      //   agregarTiendaBolivia(values)
+      // });
+      console.log('Hola mundo');
+    };
+
+    const handleCancelEditar = () => {
+      // form.resetFields();
+      // form.setFieldsValue();
+      // handleSetFormValue();
+      setModalEditarVisible(false);
+      
+    };
+
+    const handleSetFormValue = () => {
+      form.setFieldsValue();
     };
 
     const agregarTiendaBolivia = async (values) => {     
@@ -24,28 +38,23 @@ const ModalEditarTienda = ({ visible, onCancel, onSubmit, successColor , tiendas
           headers: { 'Content-Type': 'application/json' }
         });
         const respuesta = await resp.json();
-        if(Number.isInteger(respuesta.respuesta)){
-          let nuevoElemento = {'id_tienda_bolivia':respuesta.respuesta, 'nombre_tienda': values.nombre, 
-          'estado_tienda_bolivia':values.estado,'url_tienda_bolivia':values.direccion};
-          setTiendasBolivia([...tiendasBolivia, nuevoElemento])
-          // getListaTiendasBolivia();
-        }
+        console.log(respuesta);
       };
   
     return (
         <Modal 
         open={visible}
         title={<><PlusOutlined  style={{color:'#73d13d',fontSize: '18px'}} /> Editar tienda Bolivia </>}
-        onCancel={onCancel}
-        footer={[ <Button key="cancel" onClick={onCancel}> Cancel </Button>,    
+        onCancel={handleCancelEditar}
+        footer={[ <Button key="cancel" onClick={handleCancelEditar}> Cancel </Button>,    
         <Button key="submit" type="primary" style={{ backgroundColor: successColor, borderColor: successColor }} onClick={handleSubmit}>Agregar </Button>,]}>
             <hr />
             <br />
-          <Form form={form} layout="vertical">
+          <Form form={form} layout="vertical" initialValues={editarTienda}>
             <Row gutter={16}>
                 <Col span={12}>
-                    <Form.Item name="nombreE" label="Nombre" rules={[{ required: true, message: 'Escriba el nombre de la tienda!' }]}>
-                        <Input defaultValue={nombreEditar} />
+                    <Form.Item name="nombre" label="Nombre" rules={[{ required: true, message: 'Escriba el nombre de la tienda!' }]}>
+                        <Input />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -64,8 +73,6 @@ const ModalEditarTienda = ({ visible, onCancel, onSubmit, successColor , tiendas
                     </Form.Item>
                 </Col>
             </Row>
-            
-            
           </Form>
         </Modal>
     );

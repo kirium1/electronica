@@ -26,6 +26,14 @@
             $respuesta = $tiendaBolivia->eliminarTiendaBolivia($idTiendaBolivia);
             $res = json_encode($respuesta, JSON_PRETTY_PRINT);
             break;
+        case 'actualizarTiendaBolivia':
+            $idTiendaBolivia = $_POST['idTiendaBolivia'];
+            $nombre = $_POST['nombre'];
+            $estado = $_POST['estado'];
+            $direccion = $_POST['direccion'];
+            $respuesta = $tiendaBolivia->actualizarTiendaBolivia($idTiendaBolivia,$nombre,$estado,$direccion);
+            $res = json_encode($respuesta, JSON_PRETTY_PRINT);
+            break;
         default:
             # code...
             break;

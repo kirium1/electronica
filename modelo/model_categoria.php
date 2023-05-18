@@ -1,9 +1,9 @@
 <?php 
     require_once("conexion.php");
     ob_clean();
-    class TiendaBolivia extends Conexion{
+    class Categoria extends Conexion{
         private $sentenceSQL;
-        public function TiendaBolivia(){
+        public function Categoria(){
             parent::__construct();
         }
         public function cerrarConexion(){
@@ -11,8 +11,8 @@
             $this->connexion_bd = null;
         }
 
-        public function listarTiendasBolivia(){
-            $sql = "SELECT * FROM tienda_bolivia;";
+        public function listarCategorias(){
+            $sql = "SELECT * FROM categoria;";
             $sentenceSQL = $this->connexion_bd->prepare($sql);
             $res = $sentenceSQL->execute();
             $respuesta = $sentenceSQL->fetchAll(PDO::FETCH_ASSOC);

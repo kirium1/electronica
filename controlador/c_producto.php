@@ -33,7 +33,8 @@
             break;
         case 'eliminarProducto':
             $idProducto = $_POST['idProducto'];
-            $respuesta = $producto->eliminarProducto($idProducto);
+            // $respuesta = $producto->eliminarProducto($idProducto);
+            $respuesta = $producto->eliminarProductosCategoriaIMG($idProducto);
             $res = json_encode($respuesta, JSON_PRETTY_PRINT);
             break;
         default:

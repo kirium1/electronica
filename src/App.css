@@ -133,3 +133,8 @@
 .button-download {
     background: rgb(66, 184, 221);
 }
+
+.ant-table-thead .ant-table-cell {
+  background-color: #1f1f1f !important;
+  color: white !important;
+}
