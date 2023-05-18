@@ -14,11 +14,22 @@
             $respuesta = $categoria->listarCategorias();
             $res = json_encode($respuesta, JSON_PRETTY_PRINT);
             break;
+        case 'agregarCategoria':
+            $nombre = $_POST['nombre'];
+            $estado = $_POST['estado'];
+            $descripcion = $_POST['descripcion'];
+            $respuesta = $categoria->agregarCategoria($nombre,$estado,$descripcion);
+            $res = json_encode($respuesta, JSON_PRETTY_PRINT);
+            break;
+        case 'eliminarCategoria':
+            $idCategoria = $_POST['idCategoria'];
+            $respuesta = $categoria->eliminarCategoria($idCategoria);
+            $res = json_encode($respuesta, JSON_PRETTY_PRINT);
+            break;
         default:
             # code...
             break;
     }
     $categoria->cerrarConexion();
     header("Content-Type: application/json");
-    // echo json_encode($res);
     echo $res;

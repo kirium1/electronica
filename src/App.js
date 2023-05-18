@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import 'antd/dist/reset.css';
 import './App.css';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { Landing, Home, Admin, Analytics , Dashboard, MyTiendaBolivia } from './pages';
+import { Landing, Home, Admin, Analytics , Dashboard, MyTiendaBolivia, MyCategoria } from './pages';
 import { ProtectRoute } from './componentes/ProtectRoute';
 
 function App(){
@@ -29,6 +29,7 @@ function App(){
         <Route index element={<Landing/>} />
         <Route path='/landing' element={<Landing/>} />
         <Route path='/tiendaBolivia' element={<MyTiendaBolivia/>} />
+        <Route path='/categoria' element={<MyCategoria/>} />
         <Route element={<ProtectRoute isAllowed={!!user}/>}>
           <Route path='/home' element={<Home />} />
           <Route path='/dashboard' element={<Dashboard/>} />
@@ -55,6 +56,9 @@ function Navigation(){
       </li>
       <li>
         <Link to="/tiendaBolivia">Tiendas Bolivia</Link>
+      </li>
+      <li>
+        <Link to="/categoria">Categoria</Link>
       </li>
       <li>
         <Link to="/dashboard">Dashboard</Link>

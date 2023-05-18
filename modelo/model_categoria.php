@@ -20,23 +20,30 @@
             return $respuesta;
         }
 
-        public function agregarTiendaBolivia($nombre,$estado,$direccion){
-            $sql = "INSERT INTO tienda_bolivia(nombre_tienda,estado_tienda_bolivia,url_tienda_bolivia) VALUES(:nombre,:estado,:direccion);";
+        public function agregarCategoria($nombre,$estado,$descripcion){
+            $sql = "INSERT INTO categoria(nombre_categoria,estado_categoria,descripcion_categoria) VALUES(:nombre,:estado,:descripcion);";
             $sentenceSQL = $this->connexion_bd->prepare($sql);
-            $res = $sentenceSQL->execute(array(':nombre'=>$nombre,':estado'=>$estado,':direccion'=>$direccion));
+            $res = $sentenceSQL->execute(array(':nombre'=>$nombre,':estado'=>$estado,':descripcion'=>$descripcion));
             if($res === true){
                 $res = $this->connexion_bd->lastInsertId();
+                $res = intval($res);
             }
             $sentenceSQL->closeCursor();
-            return array('respuesta'=>intval($res));
+            return array('respuesta'=>$res);
         }
 
-        public function eliminarTiendaBolivia($idTiendaBolivia){
-            $sql = "DELETE FROM tienda_bolivia WHERE id_tienda_bolivia = :idTiendaBolivia;";
-            $sentenceSQL = $this->connexion_bd->prepare($sql);
-            $res = $sentenceSQL->execute(array(':idTiendaBolivia'=>$idTiendaBolivia));
+        public function eliminarCategoria($idCategoria){
+            try {
+                $sql = "DELETE FROM categoria WHERE id_categoria = :idCategoria;";
+                $sentenceSQL = $this->connexion_bd->prepare($sql);
+                $res = $sentenceSQL->execute(array(':idCategoria'=>$idCategoria));
+            }
+            catch( PDOException $Exception ) {
+                $res = $Exception->getMessage();
+            }
             $sentenceSQL->closeCursor();
-            return array('respuesta'=>$res);
+            // return $res === true ?  array('respuesta'=>intval($res)) : $res;
+            return  array('respuesta'=>$res);
         }
 
         public function actualizarTiendaBolivia($idTiendaBolivia,$nombre,$estado,$direccion){
