@@ -46,12 +46,16 @@
             return  array('respuesta'=>$res);
         }
 
-        public function actualizarTiendaBolivia($idTiendaBolivia,$nombre,$estado,$direccion){
-            $sql = "UPDATE tienda_bolivia SET nombre_tienda = :nombre, estado_tienda_bolivia = :estado, url_tienda_bolivia = :direccion WHERE id_tienda_bolivia = :idTiendaBolivia;";
-            $sentenceSQL = $this->connexion_bd->prepare($sql);
-            $res = $sentenceSQL->execute(array(':nombre'=>$nombre,':estado'=>$estado,':direccion'=>$direccion,':idTiendaBolivia'=>$idTiendaBolivia));
+        public function actualizarCategoria($nombre,$estado,$descripcion,$idCategoria){
+            try {
+                $sql = "UPDATE categoria SET nombre_categoria = :nombre, estado_categoria = :estado, descripcion_categoria = :descripcion WHERE id_categoria = :idCategoria;";
+                $sentenceSQL = $this->connexion_bd->prepare($sql);
+                $res = $sentenceSQL->execute(array(':nombre'=>$nombre,':estado'=>$estado,':descripcion'=>$descripcion,':idCategoria'=>$idCategoria));
+            } catch (PDOException $Exception) {
+                $res = $Exception->getMessage();
+            }
             $sentenceSQL->closeCursor();
-            return array('respuesta'=>intval($res));
+            return array('respuesta'=>$res);
         }
     }
     

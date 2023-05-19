@@ -26,6 +26,14 @@
             $respuesta = $categoria->eliminarCategoria($idCategoria);
             $res = json_encode($respuesta, JSON_PRETTY_PRINT);
             break;
+        case 'actualizarCategoria':
+            $idCategoria = $_POST['idCategoria'];
+            $nombre = $_POST['nombre'];
+            $estado = $_POST['estado'];
+            $descripcion = $_POST['descripcion'];
+            $respuesta = $categoria->actualizarCategoria($nombre,$estado,$descripcion,$idCategoria);
+            $res = json_encode($respuesta, JSON_PRETTY_PRINT);
+            break;
         default:
             # code...
             break;

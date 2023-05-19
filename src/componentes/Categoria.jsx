@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom';
-// import Button from 'react-bootstrap/Button';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -10,17 +8,19 @@ import {
   SmileOutlined,
   DeleteOutlined,
   PlusOutlined,
-  CloseCircleOutlined
+  CloseCircleOutlined,
+  EditOutlined
 } from '@ant-design/icons';
 import { Layout, Menu, theme, Table, Button, Modal, Form, Input , Select, Col, Row, Badge, Space, notification, Typography } from 'antd';
-import React, { useState, useLayoutEffect, useRef } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 const { Header, Sider, Content } = Layout;
 const CATEGORIA = "http://localhost/electronica/controlador/c_categoria.php";
 
   export const Categoria = () => {
     const { Option } = Select;
     const [formAgregar] = Form.useForm();
-    const { Text, Link } = Typography;
+    const [formEditar] = Form.useForm();
+    const { Text, Link, Paragraph } = Typography;
 
     // modal crear tienda 
     const successColor = '#52c41a';
@@ -125,7 +125,6 @@ const CATEGORIA = "http://localhost/electronica/controlador/c_categoria.php";
               ),
             });
           }
-          // setCategorias(datos);
           return datos;
       } catch (e) {
           return e;
@@ -135,26 +134,19 @@ const CATEGORIA = "http://localhost/electronica/controlador/c_categoria.php";
     //fin eliminar tienda
 
     // Editar tienda bolivia 
-    const [modalEditarVisible, setModalEditarVisible] = useState(false);
-    const [editarTienda, setEditarTienda] = useState({
-      nombre:'prueba',
-      direccion:'url prueba'
-    });
+    const [modalVisibleEditar, setModalVisibleEditar] = useState(false);
 
     const handleCancelEditar = () => {
-      setModalEditarVisible(false);
+      setModalVisibleEditar(false);
     };
 
     const handleSubmitActualizar = () => {
-      formAgregar.validateFields().then(values => {
-        // form.resetFields();
-        // onSubmit(values);
-        values.metodo = 'actualizarTiendaBolivia';
+      formEditar.validateFields().then(values => {
+        values.metodo = 'actualizarCategoria';
         values.idCategoria = idCategoria;
-        actualizarTiendaBolivia(values);
+        actualizarCategoria(values);
       });
     };
-
     ///
     const [categorias,setCategorias] = useState([]);
 
@@ -181,6 +173,10 @@ const CATEGORIA = "http://localhost/electronica/controlador/c_categoria.php";
           title: 'Descripcion',
           dataIndex: 'descripcion_categoria',
           key: 'descripcion_categoria',
+          render: (text) => <Paragraph  ellipsis={{
+            rows: 3,
+          }}
+          >{text}</Paragraph> ,
         },
         {
           title: 'Estado',
@@ -208,29 +204,52 @@ const CATEGORIA = "http://localhost/electronica/controlador/c_categoria.php";
         setModalEliminarVisible(true);
       }
       if(caso === 'Editar'){
-        formAgregar.setFieldsValue({ nombre: data.nombre_tienda });
-        formAgregar.setFieldsValue({ direccion: data.url_tienda_bolivia });
-        formAgregar.setFieldsValue({ estado: data.estado_tienda_bolivia });
-        setModalEditarVisible(true);
+        formEditar.setFieldsValue({ nombre: data.nombre_categoria });
+        formEditar.setFieldsValue({ descripcion: data.descripcion_categoria });
+        formEditar.setFieldsValue({ estado: data.estado_categoria });
+        setModalVisibleEditar(true);
       }
     }
 
-    const actualizarTiendaBolivia = async (values) => {     
-      console.log(values);
+    const actualizarCategoria = async (values) => {     
+      // console.log(values);
       const resp = await fetch(CATEGORIA, {
         method: 'POST',
         body: JSON.stringify(values),
         headers: { 'Content-Type': 'application/json' }
       });
-      const respuesta = await resp.json();
-      console.log(respuesta);
-      setModalEditarVisible(false);
-      if(respuesta.respuesta === 1){
-        formAgregar.resetFields();
-        // let nuevoElemento = {'id_tienda_bolivia':respuesta.respuesta, 'nombre_tienda': values.nombre, 
-        // 'estado_tienda_bolivia':values.estado,'url_tienda_bolivia':values.direccion};
-        // setTiendasBolivia([...tiendasBolivia, nuevoElemento])
+      const datos = await resp.json();
+      // console.log(respuesta);
+      setModalVisibleEditar(false);
+      if(datos.respuesta === true){
         getListaCategorias();
+        // let nuevoArreglo = categorias.filter((item) => item.id_categoria !== idCategoria);
+        // setCategorias(nuevoArreglo);
+        notification.open({
+          message: 'Exito',
+          description:
+            `Se ha actualizado la categoria ${nombreCategoria} correctamente!!`,
+          icon: (
+            <SmileOutlined
+              style={{
+                color: '#108ee9',
+              }}
+            />
+          ),
+        });
+      }else{
+        notification.open({
+          message: 'Error',
+          description:
+            `Se produjo un error al editar el elemento ${datos.respuesta}`,
+          icon: (
+            <CloseCircleOutlined
+              style={{
+                color: '#cf1322',
+              }}
+            />
+          ),
+        });
       }
     };
 
@@ -336,8 +355,7 @@ const CATEGORIA = "http://localhost/electronica/controlador/c_categoria.php";
             <Row>
                 <Col span={24}>
                     <Form.Item name="descripcion" label="Descripcion" rules={[{ required: true, message: 'Escriba la descripcion de la categoria!' }]}>
-                        {/* <Input/> */}
-                        <Input.TextArea showCount maxLength={5000}/>
+                        <Input.TextArea rows={7} showCount maxLength={5000}/>
                     </Form.Item>
                 </Col>
             </Row>
@@ -359,35 +377,35 @@ const CATEGORIA = "http://localhost/electronica/controlador/c_categoria.php";
         
         
         <Modal 
-        open={modalEditarVisible}
-        title={<><PlusOutlined  style={{color:'#73d13d',fontSize: '18px'}} /> Editar tienda Bolivia </>}
+        open={modalVisibleEditar}
+        title={<><EditOutlined  style={{color:'#ad8b00',fontSize: '18px'}} /> Editar Categoria </>}
         onCancel={handleCancelEditar}
         footer={[ <Button key="cancel" onClick={handleCancelEditar}> Cancel </Button>,    
-        <Button key="submit" type="primary" style={{ backgroundColor: successColor, borderColor: successColor }} onClick={handleSubmitActualizar}>Actualizar </Button>,]}>
-            <hr />
-            <br />
-          <Form  layout="vertical" initialValues={editarTienda}>
+        <Button key="submit" type="primary" onClick={handleSubmitActualizar}>Actualizar </Button>,]}>
+          <hr />
+          <br />
+          <Form form={formEditar} layout="vertical">
             <Row gutter={16}>
-                <Col span={12}>
-                    <Form.Item name="nombre" label="Nombre" rules={[{ required: true, message: 'Escriba el nombre de la tienda!' }]}>
-                        <Input />
-                    </Form.Item>
-                </Col>
-                <Col span={12}>
-                    <Form.Item name="estado" label="Estado" rules={[{ required: true, message: 'Seleccione el estado!' }]}>
-                        <Select placeholder="Seleccione una opcion">
-                            <Option value="1">Si</Option>
-                            <Option value="0">No</Option>
-                        </Select>
-                    </Form.Item>
-                </Col>
+              <Col span={12}>
+                <Form.Item name="nombre" label="Nombre" rules={[{ required: true, message: 'Escriba el nombre de la categoria!' }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="estado" label="Estado" rules={[{ required: true, message: 'Seleccione el estado!' }]}>
+                  <Select placeholder="Seleccione una opcion">
+                    <Option value="1">Si</Option>
+                    <Option value="0">No</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
             </Row>
             <Row>
-                <Col span={24}>
-                    <Form.Item name="direccion" label="Direccion" rules={[{ required: true, message: 'Escriba la direccion url de la tienda!' }]}>
-                        <Input/>
-                    </Form.Item>
-                </Col>
+              <Col span={24}>
+                <Form.Item name="descripcion" label="Descripcion" rules={[{ required: true, message: 'Escriba la descripcion de la categoria!' }]}>
+                  <Input.TextArea rows={7} showCount maxLength={5000}/>
+                </Form.Item>
+              </Col>
             </Row>
           </Form>
         </Modal>
