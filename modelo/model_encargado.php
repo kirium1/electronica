@@ -3,9 +3,8 @@
     ob_clean();
     class Encargado extends Conexion{
         private $sentenceSQL;
-
         public function __construct() {
-
+            parent::__construct();
         }
 
         public function cerrarConexion(){

@@ -4,29 +4,37 @@ import React, { useState } from 'react';
 import 'antd/dist/reset.css';
 import './App.css';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { Landing, Home, Admin, Analytics , Dashboard, MyTiendaBolivia, MyCategoria } from './pages';
+import { Landing, Home, Admin, Analytics , Dashboard, MyTiendaBolivia, MyCategoria, MyLogin } from './pages';
 import { ProtectRoute } from './componentes/ProtectRoute';
 
 function App(){
   const [user, setUser] = useState(null);
   const login = () => {
-    setUser({
-      id:1,
-      name: "Jhon",
-      permissions: ['analiz']
-    })
+    // setUser({
+    //   id:1,
+    //   name: "Jhon",
+    //   permissions: ['analiz']
+    // })
+    console.log('estos');
   }
 
-  const logout = () => setUser(null)
+  const cambiarUsuario = (valor) => {
+    setUser(valor);
+  }
+
+  const logout = () => setUser(null);
 
   return (
     <BrowserRouter>
-      <Navigation/>
+      {/* <Navigation/>
       {
         user ? (<button onClick={logout}>Logout</button>) : (<button onClick={login}> Login</button>)
-      }
+      } */}
       <Routes> 
-        <Route index element={<Landing/>} />
+        <Route index element={<MyLogin login={login} setUser={setUser} cambiarUsuario={cambiarUsuario} />}  />
+        <Route path='/login' element={<MyLogin login={login} setUser={setUser} cambiarUsuario={cambiarUsuario} />}  />
+        {/* <Route index element={<Landing/>} /> */}
+        {/* <Route path='/login' element={<MyLogin />} /> */}
         <Route path='/landing' element={<Landing/>} />
         <Route path='/tiendaBolivia' element={<MyTiendaBolivia/>} />
         <Route path='/categoria' element={<MyCategoria/>} />
@@ -48,6 +56,9 @@ function App(){
 function Navigation(){
   return <nav>
     <ul>
+      <li>
+        <Link to="/login">Login</Link>
+      </li> 
       <li>
         <Link to="/landing">Landing</Link>
       </li>

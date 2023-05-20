@@ -3,6 +3,13 @@ import { MenuAntDesing } from '../componentes/MenuAntDesing';
 import { MyDashboard } from '../componentes/Dashboard';
 import { TiendaBolivia } from '../componentes/TiendaBolivia';
 import { Categoria } from '../componentes/Categoria';
+import { Login } from '../componentes/Login';
+ 
+
+export const MyLogin = () =>{
+    return <Login />
+}
+// export const MyLogin = () => <h2>My Login  (Public)</h2>
 
 export const Landing = () => <h2>My landing (Public)</h2>
 
@@ -22,6 +29,7 @@ export const MyTiendaBolivia = () => {
 export const MyCategoria = () => {
     return <Categoria />
 }
+
 
 export const Analytics = () => <h2>My Analytics (Private , permission: 'analize')</h2>
 
